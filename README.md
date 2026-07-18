@@ -46,4 +46,4 @@ composer run dev   # أو: php artisan serve + npm run dev
 
 > البيانات ضخمة وتُجلب من مصادر خارجية (Quran.Foundation / everyayah / spa5k)، لذا تُستورد مرة واحدة بعد النشر وليست جزءاً من كل نشر.
 
-بيانات القرآن من مجمع الملك فهد عبر Quran.Foundation. مشروع تعليمي — جامعة القصيم.
+بيانات القرآن من مجمع الملك فهد عبر Quran.Foundation.  جامعة القصيم.

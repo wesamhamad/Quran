@@ -651,7 +651,7 @@ onUnmounted(() => {
 .word.selected { background: var(--brand-soft); box-shadow: 0 0 0 1.5px var(--brand-200); }
 
 /* لافتة السورة — خطوط رفيعة أنيقة */
-.surah-banner { text-align: center; margin: 1.2rem 0 1.1rem; }
+.surah-banner { text-align: center; margin: 1.2rem 0 1.9rem; }
 /* لافتة اسم السورة بإطار زخرفي (public/surah-banner.png) */
 .surah-name {
     display: inline-flex; align-items: center; justify-content: center;
@@ -659,8 +659,10 @@ onUnmounted(() => {
     background: url('/surah-banner.png') center / 100% 100% no-repeat;
     font-family: 'Amiri Quran', 'Traditional Arabic', serif;
     font-size: clamp(1.05rem, 4.2cqw, 1.7rem); font-weight: 700; color: var(--brand-700);
-    padding-bottom: 0.15em; line-height: 1;
+    padding-bottom: 0.42em; line-height: 1;
 }
+/* مسافة أكبر تحت البسملة قبل أول آية */
+.basmalah { margin-bottom: 0.6rem; }
 .basmalah { font-family: 'Amiri Quran', serif; font-size: clamp(1.4rem, 7.6cqw, 2.5rem); line-height: 1; margin-top: 0.4rem; color: var(--paper-ink); white-space: nowrap; }
 
 /* أزرار التنقّل الجانبية — دائرية شبحية عائمة */

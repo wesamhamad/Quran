@@ -88,7 +88,7 @@ const resumeHref = computed(() => {
             </article>
         </section>
 
-        <footer class="foot">مشروع تعليمي — جامعة القصيم · بيانات القرآن من مجمع الملك فهد عبر Quran.Foundation</footer>
+        <footer class="foot"> تطوير عمادة تقنية المعلومات . جميع الحقوق محفوظة لجامعة القصيم </footer>
     </div>
 </template>
 
