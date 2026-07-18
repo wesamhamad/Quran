@@ -438,17 +438,11 @@ onUnmounted(() => {
     <div class="mushaf-screen" dir="rtl">
         <AppNav active="mushaf" />
 
-        <!-- شريط معلومات الصفحة -->
+        <!-- شريط أدوات صغير -->
         <header class="topbar">
-            <div class="meta">
-                <span v-for="s in surahs" :key="s.id" class="chip">سورة {{ s.name_arabic }}</span>
-            </div>
-            <div class="controls">
-                <button class="chip toggle" :class="{ on: memoMode }" @click="toggleMemo">
-                    {{ memoMode ? '✓ وضع الحفظ' : 'وضع الحفظ' }}
-                </button>
-                <span class="chip subtle" v-if="juz">الجزء {{ juz }}</span>
-            </div>
+            <button class="chip toggle" :class="{ on: memoMode }" @click="toggleMemo">
+                {{ memoMode ? '✓ وضع الحفظ' : 'وضع الحفظ' }}
+            </button>
         </header>
         <p v-if="memoMode" class="memo-hint">وضع الحفظ مُفعّل — الكلمات مخفية، اضغط أي كلمة لكشف آيتها.</p>
 
@@ -457,6 +451,13 @@ onUnmounted(() => {
             <button class="nav next" :disabled="!next" @click="go(next)" aria-label="التالية">‹</button>
 
             <div class="mushaf-page">
+                <!-- ترويسة داخل الإطار: اسم السورة (يمين) والجزء (يسار) — كمصحف المدينة -->
+                <div class="page-head">
+                    <span class="ph-surah">{{ surahs.map(s => 'سورة ' + s.name_arabic).join(' · ') }}</span>
+                    <span class="ph-juz" v-if="juz">الجزء {{ juz }}</span>
+                </div>
+                <div class="ph-divider"></div>
+
                 <template v-for="line in lines" :key="line.line_number">
                     <div v-if="line.start_surah" class="surah-banner">
                         <div class="surah-name">سورة {{ line.start_surah.name_arabic }}</div>
@@ -564,12 +565,9 @@ onUnmounted(() => {
 <style scoped>
 .mushaf-screen { min-height: 100vh; background: var(--canvas); display: flex; flex-direction: column; color: var(--text); }
 
-/* شريط معلومات سلس */
-.topbar { display: flex; justify-content: space-between; align-items: center; gap: 0.5rem; padding: 0.7rem 1.4rem; flex-wrap: wrap; }
-.meta { display: flex; gap: 0.4rem; flex-wrap: wrap; }
-.controls { display: flex; gap: 0.4rem; align-items: center; }
-.chip { font-size: 0.8rem; color: var(--text-muted); background: var(--surface); border: 1px solid var(--border); padding: 0.25rem 0.85rem; border-radius: 999px; }
-.chip.subtle { background: transparent; }
+/* شريط أدوات صغير */
+.topbar { display: flex; justify-content: center; align-items: center; gap: 0.5rem; padding: 0.7rem 1.4rem 0.2rem; }
+.chip { font-size: 0.8rem; color: var(--text-muted); background: var(--surface); border: 1px solid var(--border); padding: 0.3rem 0.9rem; border-radius: 999px; }
 .chip.toggle { cursor: pointer; font-family: inherit; }
 .chip.toggle:hover { color: var(--text); }
 .chip.toggle.on { background: var(--brand-soft); color: var(--brand); border-color: var(--brand-200); font-weight: 600; }
@@ -605,6 +603,15 @@ onUnmounted(() => {
     opacity: 0.85;
     pointer-events: none;
 }
+/* ترويسة الصفحة داخل الإطار (اسم السورة + الجزء) */
+.page-head {
+    display: flex; justify-content: space-between; align-items: center; gap: 0.5rem;
+    font-family: 'Segoe UI', Tahoma, sans-serif; margin-bottom: 0.5rem;
+}
+.ph-surah { font-size: 0.95rem; font-weight: 700; color: var(--brand); }
+.ph-juz { font-size: 0.85rem; font-weight: 600; color: var(--gold); }
+.ph-divider { height: 1.5px; background: linear-gradient(90deg, transparent, var(--gold) 20%, var(--gold) 80%, transparent); opacity: 0.6; margin-bottom: 1rem; }
+
 .qline {
     /* محاذاة QCF الطبيعية: خط المصحف مصمّم ليملأ السطر بمسافاته الخاصة —
        بلا space-between حتى تتّصل خطوط مواضع السجدة والوصلات فوق الكلمات */
