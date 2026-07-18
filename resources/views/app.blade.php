@@ -51,8 +51,12 @@
 
         @fonts
 
-        {{-- خطوط QCF v2 (مصحف المدينة) --}}
-        <link rel="stylesheet" href="/fonts/qcf/v2/qcf.css">
+        {{-- خطوط QCF v2 (مصحف المدينة) — v2: font-display:block لمنع وميض الرموز المنفصلة --}}
+        <link rel="stylesheet" href="/fonts/qcf/v2/qcf.css?v=2">
+        {{-- تحميل مسبق لخط الصفحة الحالية إن كانت صفحة مصحف --}}
+        @if(($page['component'] ?? '') === 'Mushaf' && isset($page['props']['page']))
+            <link rel="preload" as="font" type="font/woff2" crossorigin href="/fonts/qcf/v2/p{{ $page['props']['page'] }}.woff2">
+        @endif
 
         {{-- خط أميري للنصوص القرآنية العامة (التفسير/البحث/صورة المشاركة) --}}
         <link rel="preconnect" href="https://fonts.googleapis.com">

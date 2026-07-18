@@ -430,7 +430,10 @@ onUnmounted(() => {
 </script>
 
 <template>
-    <Head :title="`المصحف — صفحة ${page}`" />
+    <Head :title="`المصحف — صفحة ${page}`">
+        <!-- تحميل مسبق لخط صفحة QCF ليظهر النص العثماني بشكله النهائي مباشرة -->
+        <link rel="preload" as="font" type="font/woff2" crossorigin :href="`/fonts/qcf/v2/p${page}.woff2`" />
+    </Head>
 
     <div class="mushaf-screen" dir="rtl">
         <AppNav active="mushaf" />
