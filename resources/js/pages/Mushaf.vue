@@ -476,10 +476,10 @@ onUnmounted(() => {
             <button class="nav next" :disabled="!next" @click="go(next)" aria-label="التالية">‹</button>
 
             <div class="page-column">
-                <!-- الجزء واسم السورة فوق الإطار (كمصحف المدينة) -->
+                <!-- الجزء (يمين) واسم السورة (يسار) فوق الإطار -->
                 <div class="page-topbar">
-                    <span class="pt-surah">{{ surahs.map(s => 'سورة ' + s.name_arabic).join(' · ') }}</span>
                     <span class="pt-juz" v-if="juz">{{ juzLabel(juz) }}</span>
+                    <span class="pt-surah">{{ surahs.map(s => 'سورة ' + s.name_arabic).join(' · ') }}</span>
                 </div>
 
                 <div class="mushaf-page">
