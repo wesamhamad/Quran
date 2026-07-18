@@ -594,7 +594,7 @@ onUnmounted(() => {
        بلا space-between حتى تتّصل خطوط مواضع السجدة والوصلات فوق الكلمات */
     display: flex; justify-content: flex-start; align-items: center; direction: rtl;
     font-size: clamp(0.85rem, 5.7cqw, 2.3rem);
-    line-height: 2.15; color: var(--paper-ink); white-space: nowrap;
+    line-height: 2.0; color: var(--paper-ink); white-space: nowrap;
 }
 /* صفحات موسّطة (الفاتحة/بداية البقرة) */
 .qline.centered { justify-content: center; }
