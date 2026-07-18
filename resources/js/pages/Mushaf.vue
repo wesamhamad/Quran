@@ -296,6 +296,23 @@ async function shareAyahImage() {
 }
 
 // صورة التفسير (الآية + نص التفسير المختار)
+function canvasToBlob(c: HTMLCanvasElement): Promise<Blob | null> {
+    return new Promise((res) => c.toBlob((b) => res(b), 'image/png'));
+}
+async function shareFiles(files: File[], title: string) {
+    const nav = navigator as any;
+    if (nav.canShare && nav.canShare({ files })) {
+        try { await nav.share({ files, title }); return; } catch { /* ألغى/فشل — نُنزّل */ }
+    }
+    for (const f of files) {
+        const url = URL.createObjectURL(f);
+        const a = document.createElement('a');
+        a.href = url; a.download = f.name; a.click();
+        URL.revokeObjectURL(url);
+        await new Promise((r) => setTimeout(r, 350));
+    }
+}
+
 async function shareTafsirImage() {
     const v = verseData.value;
     if (!v || !v.tafsirs.length) return;
@@ -303,70 +320,99 @@ async function shareTafsirImage() {
     try { await document.fonts.load('48px "Amiri Quran"'); await document.fonts.ready; } catch { /* */ }
 
     const W = 1080, m = 70, pad = m + 55;
+    const ayahFs = 50, ayLH = ayahFs * 1.9;
+    const tafFs = 33, tfLH = tafFs * 1.75;
     const measure = document.createElement('canvas').getContext('2d')!;
     measure.direction = 'rtl';
 
-    const ayahFs = 50, ayLH = ayahFs * 1.9;
     measure.font = `${ayahFs}px "Amiri Quran", serif`;
     const ayahText = `${v.text_uthmani} ﴿${toArabicNum(v.number_in_surah)}﴾`;
     const ayahLines = wrapArabic(measure, ayahText, W - 2 * pad);
 
-    const tafFs = 33, tfLH = tafFs * 1.75, maxTafLines = 30;
     measure.font = `${tafFs}px "Segoe UI", Tahoma, sans-serif`;
-    let tafLines = wrapArabic(measure, stripHtml(t.text), W - 2 * pad);
-    if (tafLines.length > maxTafLines) {
-        tafLines = tafLines.slice(0, maxTafLines);
-        tafLines[maxTafLines - 1] += ' …';
+    const allTaf = wrapArabic(measure, stripHtml(t.text), W - 2 * pad);
+
+    // تقسيم التفسير إلى أجزاء (~26 سطراً لكل صورة) مع «يتبع»
+    const perPart = 26;
+    const parts: string[][] = [];
+    for (let i = 0; i < allTaf.length; i += perPart) parts.push(allTaf.slice(i, i + perPart));
+    if (parts.length === 0) parts.push([]);
+    const total = parts.length;
+
+    async function buildPart(partLines: string[], idx: number): Promise<File | null> {
+        const isFirst = idx === 0;
+        const isLast = idx === total - 1;
+
+        // ارتفاع مطابق للرسم
+        let yy = m + 45 + 88 + 62; // شعار + ترويسة
+        yy += isFirst ? (95 + ayahLines.length * ayLH + 18 + 52 + 54) : (66 + 40);
+        yy += partLines.length * tfLH;
+        if (!isLast) yy += 56; // سطر «يتبع»
+        const H = Math.round(yy + 60 + 40 + m);
+
+        const c = document.createElement('canvas');
+        c.width = W; c.height = H;
+        const ctx = c.getContext('2d');
+        if (!ctx) return null;
+
+        drawFrame(ctx, W, H);
+        const afterLogo = await drawLogo(ctx, W, m + 45);
+        ctx.direction = 'rtl'; ctx.textAlign = 'center';
+
+        ctx.fillStyle = '#25935f';
+        ctx.font = 'bold 40px "Amiri Quran", serif';
+        let y = afterLogo + 62;
+        const suffix = total > 1 ? ` (${toArabicNum(idx + 1)}/${toArabicNum(total)})` : '';
+        ctx.fillText(`سورة ${v!.surah.name} · الآية ${v!.number_in_surah}${suffix}`, W / 2, y);
+
+        if (isFirst) {
+            ctx.fillStyle = '#1b1b1b';
+            ctx.font = `${ayahFs}px "Amiri Quran", serif`;
+            y += 95;
+            for (const ln of ayahLines) { ctx.fillText(ln, W / 2, y); y += ayLH; }
+            y += 18;
+            ctx.strokeStyle = '#e2d5ac'; ctx.lineWidth = 2;
+            ctx.beginPath(); ctx.moveTo(pad, y); ctx.lineTo(W - pad, y); ctx.stroke();
+            y += 52;
+            ctx.fillStyle = '#8a6d2f';
+            ctx.font = 'bold 33px "Segoe UI", Tahoma, sans-serif';
+            ctx.fillText(`التفسير — ${t.name}`, W / 2, y);
+            y += 54;
+        } else {
+            y += 66;
+            ctx.fillStyle = '#8a6d2f';
+            ctx.font = 'bold 32px "Segoe UI", Tahoma, sans-serif';
+            ctx.fillText(`تتمة التفسير — ${t.name}`, W / 2, y);
+            y += 40;
+        }
+
+        ctx.textAlign = 'right'; ctx.fillStyle = '#2c3a29';
+        ctx.font = `${tafFs}px "Segoe UI", Tahoma, sans-serif`;
+        for (const ln of partLines) { ctx.fillText(ln, W - pad, y); y += tfLH; }
+
+        if (!isLast) {
+            ctx.textAlign = 'left'; ctx.fillStyle = '#8a6d2f';
+            ctx.font = 'bold 30px "Segoe UI", Tahoma, sans-serif';
+            ctx.fillText('يتبع ⟵', pad, y + 32);
+        }
+
+        ctx.textAlign = 'center'; ctx.fillStyle = '#25935f';
+        ctx.font = '600 28px "Segoe UI", Tahoma, sans-serif';
+        ctx.fillText('المصحف الإلكتروني · جامعة القصيم', W / 2, H - m - 40);
+
+        const blob = await canvasToBlob(c);
+        if (!blob) return null;
+        const key = v!.verse_key.replace(':', '-');
+        const name = total > 1 ? `tafsir-${key}-${idx + 1}.png` : `tafsir-${key}.png`;
+        return new File([blob], name, { type: 'image/png' });
     }
 
-    // حساب الارتفاع مطابقاً لتسلسل الرسم أدناه
-    let yy = m + 45 + 88;   // بعد الشعار
-    yy += 62;               // ترويسة السورة
-    yy += 95;               // فراغ قبل الآية
-    yy += ayahLines.length * ayLH;
-    yy += 18 + 52 + 54;     // فاصل + اسم التفسير + فراغ
-    yy += tafLines.length * tfLH;
-    yy += 60;               // فراغ قبل التذييل
-    const H = Math.round(yy + 40 + m);
-
-    const c = document.createElement('canvas');
-    c.width = W; c.height = H;
-    const ctx = c.getContext('2d');
-    if (!ctx) return;
-
-    drawFrame(ctx, W, H);
-    const afterLogo = await drawLogo(ctx, W, m + 45);
-    ctx.direction = 'rtl'; ctx.textAlign = 'center';
-
-    ctx.fillStyle = '#25935f';
-    ctx.font = 'bold 40px "Amiri Quran", serif';
-    let y = afterLogo + 62;
-    ctx.fillText(`سورة ${v.surah.name} · الآية ${v.number_in_surah}`, W / 2, y);
-
-    ctx.fillStyle = '#1b1b1b';
-    ctx.font = `${ayahFs}px "Amiri Quran", serif`;
-    y += 95;
-    for (const ln of ayahLines) { ctx.fillText(ln, W / 2, y); y += ayLH; }
-
-    y += 18;
-    ctx.strokeStyle = '#e2d5ac'; ctx.lineWidth = 2;
-    ctx.beginPath(); ctx.moveTo(pad, y); ctx.lineTo(W - pad, y); ctx.stroke();
-
-    y += 52;
-    ctx.fillStyle = '#8a6d2f';
-    ctx.font = 'bold 33px "Segoe UI", Tahoma, sans-serif';
-    ctx.fillText(`التفسير — ${t.name}`, W / 2, y);
-
-    ctx.textAlign = 'right'; ctx.fillStyle = '#2c3a29';
-    ctx.font = `${tafFs}px "Segoe UI", Tahoma, sans-serif`;
-    y += 54;
-    for (const ln of tafLines) { ctx.fillText(ln, W - pad, y); y += tfLH; }
-
-    ctx.textAlign = 'center'; ctx.fillStyle = '#25935f';
-    ctx.font = '600 28px "Segoe UI", Tahoma, sans-serif';
-    ctx.fillText('المصحف الإلكتروني · جامعة القصيم', W / 2, H - m - 40);
-
-    await exportCanvas(c, `tafsir-${v.verse_key.replace(':', '-')}.png`, `تفسير ${v.verse_key}`);
+    const files: File[] = [];
+    for (let i = 0; i < total; i++) {
+        const f = await buildPart(parts[i], i);
+        if (f) files.push(f);
+    }
+    await shareFiles(files, `تفسير ${v.verse_key}`);
 }
 
 onMounted(() => {

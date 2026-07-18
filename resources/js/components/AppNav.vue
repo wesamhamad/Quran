@@ -79,16 +79,19 @@ function toggleTheme() {
 .theme:hover { background: var(--surface-2); color: var(--brand); }
 .ticon { width: 19px; height: 19px; }
 
-@media (max-width: 560px) {
-    .appnav { padding: 0.55rem 0.8rem; gap: 0.5rem; }
-    .logo { height: 42px; max-width: 110px; }
-    .brand-text strong { font-size: 0.85rem; }
-    .brand-text small { font-size: 0.62rem; }
-    .links a { padding: 0.4rem 0.6rem; font-size: 0.8rem; }
-    .theme { width: 34px; height: 34px; }
+@media (max-width: 640px) {
+    .appnav { padding: 0.45rem 0.6rem; gap: 0.35rem; }
+    /* الشعار يحمل هوية الجامعة — نخفي النص لتفادي التداخل */
+    .brand-text { display: none; }
+    .logo { height: 32px; max-width: 96px; }
+    .brand { flex: none; }
+    .right { gap: 0.3rem; flex: 1; justify-content: flex-end; min-width: 0; }
+    .links { gap: 0.1rem; }
+    .links a { padding: 0.35rem 0.5rem; font-size: 0.78rem; }
+    .theme { width: 32px; height: 32px; }
 }
 @media (max-width: 400px) {
-    .brand-text { display: none; }
-    .links a { padding: 0.35rem 0.5rem; font-size: 0.75rem; }
+    .logo { max-width: 84px; }
+    .links a { padding: 0.3rem 0.4rem; font-size: 0.72rem; }
 }
 </style>

@@ -68,8 +68,9 @@ class DownloadQcfFonts extends Command
     {
         $css = "/* توليد تلقائي — خطوط QCF v2 (مصحف المدينة، مجمع الملك فهد) */\n";
         for ($p = 1; $p <= 604; $p++) {
+            // font-display: block — يُخفي النص حتى يجهز خط QCF (يتفادى ظهور الرموز المنفصلة أولاً)
             $css .= sprintf(
-                "@font-face{font-family:'p%d';src:url('/fonts/qcf/v2/p%d.woff2') format('woff2');font-display:swap;}\n",
+                "@font-face{font-family:'p%d';src:url('/fonts/qcf/v2/p%d.woff2') format('woff2');font-display:block;}\n",
                 $p, $p
             );
         }
