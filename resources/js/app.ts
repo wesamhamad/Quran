@@ -5,10 +5,11 @@ import AuthLayout from '@/layouts/AuthLayout.vue';
 import SettingsLayout from '@/layouts/settings/Layout.vue';
 import { initializeFlashToast } from '@/lib/flashToast';
 
-const appName = import.meta.env.VITE_APP_NAME || 'Laravel';
+// عنوان التبويب بأسلوب موقع جامعة القصيم الرسمي
+const appName = 'جامعة القصيم | Qassim University';
 
 createInertiaApp({
-    title: (title) => (title ? `${title} - ${appName}` : appName),
+    title: (title) => (title ? `${title} | ${appName}` : `المصحف الإلكتروني | ${appName}`),
     layout: (name) => {
         switch (true) {
             case name === 'Welcome':

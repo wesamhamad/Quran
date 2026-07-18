@@ -67,7 +67,7 @@
 
         @vite(['resources/css/app.css', 'resources/js/app.ts', "resources/js/pages/{$page['component']}.vue"])
         <x-inertia::head>
-            <title>{{ config('app.name', 'Laravel') }}</title>
+            <title>المصحف الإلكتروني | جامعة القصيم | Qassim University</title>
         </x-inertia::head>
     </head>
     <body class="font-sans antialiased">

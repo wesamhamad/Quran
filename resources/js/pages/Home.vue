@@ -17,7 +17,7 @@ const resumeHref = computed(() => {
 </script>
 
 <template>
-    <Head title="المصحف الإلكتروني — جامعة القصيم" />
+    <Head title="المصحف الإلكتروني" />
     <div class="home" dir="rtl">
         <AppNav />
 
