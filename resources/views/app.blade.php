@@ -30,8 +30,10 @@
             }
         </style>
 
-        <link rel="icon" href="/qu-logo.webp" type="image/webp">
-        <link rel="apple-touch-icon" href="/og-image.png">
+        {{-- أيقونة التبويب — نفس أيقونة موقع جامعة القصيم الرسمي --}}
+        <link rel="icon" type="image/png" sizes="32x32" href="/qu-icon-32.png">
+        <link rel="icon" type="image/png" sizes="192x192" href="/qu-icon-192.png">
+        <link rel="apple-touch-icon" sizes="180x180" href="/qu-icon-180.png">
 
         {{-- معاينة المشاركة (Open Graph / Twitter) — شعار جامعة القصيم ووصف عربي --}}
         <meta name="description" content="المصحف الإلكتروني لجامعة القصيم — اقرأ القرآن الكريم بالرسم العثماني (مصحف المدينة) مع التلاوة الصوتية بأصوات مشاهير القرّاء، التفاسير وترجمة المعاني، البحث، ووضع الحفظ.">
@@ -40,14 +42,14 @@
         <meta property="og:locale" content="ar_SA">
         <meta property="og:title" content="المصحف الإلكتروني — جامعة القصيم">
         <meta property="og:description" content="القرآن الكريم بالرسم العثماني (مصحف المدينة) مع التلاوة الصوتية، التفاسير والترجمة، البحث، ووضع الحفظ — مشروع جامعة القصيم.">
-        <meta property="og:image" content="{{ url('/og-image.png') }}">
+        <meta property="og:image" content="{{ url('/og-image.png').'?v=2' }}">
         <meta property="og:image:width" content="1200">
         <meta property="og:image:height" content="630">
         <meta property="og:url" content="{{ url()->current() }}">
         <meta name="twitter:card" content="summary_large_image">
         <meta name="twitter:title" content="المصحف الإلكتروني — جامعة القصيم">
         <meta name="twitter:description" content="القرآن الكريم بالرسم العثماني مع التلاوة والتفسير والبحث — جامعة القصيم.">
-        <meta name="twitter:image" content="{{ url('/og-image.png') }}">
+        <meta name="twitter:image" content="{{ url('/og-image.png').'?v=2' }}">
 
         @fonts
 
