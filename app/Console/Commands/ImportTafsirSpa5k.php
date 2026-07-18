@@ -19,11 +19,12 @@ class ImportTafsirSpa5k extends Command
 
     public function handle(): int
     {
-        $tafsir = Tafsir::where('slug', $this->argument('slug'))->first();
-        if (! $tafsir) {
-            $this->error('لم يُعثر على التفسير: '.$this->argument('slug'));
-            return self::FAILURE;
-        }
+        // ينشئ السجل تلقائياً إن لم يكن موجوداً (لا يتطلب استيراداً مسبقاً)
+        $slug = $this->argument('slug');
+        $tafsir = Tafsir::firstOrCreate(
+            ['slug' => $slug],
+            ['name' => $this->option('name') ?: $slug, 'language' => 'ar']
+        );
         if ($name = $this->option('name')) {
             $tafsir->update(['name' => $name]);
         }
