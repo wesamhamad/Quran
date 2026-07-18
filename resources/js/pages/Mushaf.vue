@@ -62,6 +62,21 @@ function changeReciter(e: Event) {
     stop();
     router.visit(`/mushaf/${props.page}?reciter=${id}`, { preserveScroll: true });
 }
+
+/* ---------- التمرير باللمس (الجوال) ---------- */
+let touchX = 0, touchY = 0;
+function onTouchStart(e: TouchEvent) {
+    touchX = e.changedTouches[0].clientX;
+    touchY = e.changedTouches[0].clientY;
+}
+function onTouchEnd(e: TouchEvent) {
+    const dx = e.changedTouches[0].clientX - touchX;
+    const dy = e.changedTouches[0].clientY - touchY;
+    // تمرير أفقي واضح فقط (لا يتعارض مع التمرير العمودي أو الضغط على كلمة)
+    if (Math.abs(dx) < 55 || Math.abs(dx) < Math.abs(dy) * 1.4) return;
+    if (dx > 0) go(props.next);   // سحب لليمين → الصفحة التالية
+    else go(props.prev);          // سحب لليسار → الصفحة السابقة
+}
 function onKey(e: KeyboardEvent) {
     if ((e.target as HTMLElement)?.tagName === 'INPUT') return;
     if (e.key === 'ArrowRight') go(props.prev);
@@ -457,7 +472,7 @@ onUnmounted(() => {
         <p v-if="memoMode" class="memo-hint">وضع الحفظ مُفعّل — الكلمات مخفية، اضغط أي كلمة لكشف آيتها.</p>
 
         <!-- صفحة المصحف -->
-        <main class="page-wrap">
+        <main class="page-wrap" @touchstart.passive="onTouchStart" @touchend.passive="onTouchEnd">
             <button class="nav next" :disabled="!next" @click="go(next)" aria-label="التالية">‹</button>
 
             <div class="mushaf-page">
@@ -630,7 +645,7 @@ onUnmounted(() => {
 /* شريط الترويسة الزخرفي (اسم السورة يمين + الجزء يسار) بميداليات على الطرفين */
 .page-head {
     position: relative;
-    display: flex; justify-content: space-between; align-items: center; gap: 0.5rem;
+    display: flex; justify-content: center; align-items: center; gap: clamp(1.5rem, 6vw, 3.5rem);
     margin-bottom: 1rem; padding: 0.5rem 2.6rem;
     font-family: 'Segoe UI', Tahoma, sans-serif;
     background: var(--brand-soft);
