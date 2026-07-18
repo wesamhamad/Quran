@@ -475,13 +475,14 @@ onUnmounted(() => {
         <main class="page-wrap" @touchstart.passive="onTouchStart" @touchend.passive="onTouchEnd">
             <button class="nav next" :disabled="!next" @click="go(next)" aria-label="التالية">‹</button>
 
-            <div class="mushaf-page">
-                <!-- ترويسة داخل الإطار: اسم السورة (يمين) والجزء (يسار) — كمصحف المدينة -->
-                <div class="page-head">
-                    <span class="ph-surah">{{ surahs.map(s => 'سورة ' + s.name_arabic).join(' · ') }}</span>
-                    <span class="ph-juz" v-if="juz">{{ juzLabel(juz) }}</span>
+            <div class="page-column">
+                <!-- الجزء واسم السورة فوق الإطار (كمصحف المدينة) -->
+                <div class="page-topbar">
+                    <span class="pt-surah">{{ surahs.map(s => 'سورة ' + s.name_arabic).join(' · ') }}</span>
+                    <span class="pt-juz" v-if="juz">{{ juzLabel(juz) }}</span>
                 </div>
 
+                <div class="mushaf-page">
                 <template v-for="line in lines" :key="line.line_number">
                     <div v-if="line.start_surah" class="surah-banner">
                         <div class="surah-name">سورة {{ line.start_surah.name_arabic }}</div>
@@ -510,6 +511,7 @@ onUnmounted(() => {
 
                 <!-- رقم الصفحة بزخرفة أسفل الإطار (كمصحف المدينة) -->
                 <div class="page-badge">{{ pageArabic(page) }}</div>
+                </div>
             </div>
 
             <button class="nav prev" :disabled="!prev" @click="go(prev)" aria-label="السابقة">›</button>
@@ -615,29 +617,16 @@ onUnmounted(() => {
     padding: clamp(0.8rem, 3vw, 1.8rem) clamp(0.8rem, 3vw, 1.8rem) clamp(1rem, 3vw, 1.8rem);
     box-shadow: var(--shadow-md);
 }
-/* شريط الترويسة الزخرفي (اسم السورة يمين + الجزء يسار) بميداليات على الطرفين */
-.page-head {
-    position: relative;
-    display: flex; justify-content: center; align-items: center; flex-wrap: wrap; text-align: center;
-    gap: 0.4rem clamp(1.5rem, 6vw, 3.5rem);
-    margin-bottom: 1rem; padding: 0.5rem 2.8rem;
-    font-family: 'Segoe UI', Tahoma, sans-serif;
-    background: var(--brand-soft);
-    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16'%3E%3Cpath d='M8 2 L14 8 L8 14 L2 8 Z' fill='none' stroke='%231f7a54' stroke-width='0.6' opacity='0.35'/%3E%3C/svg%3E");
-    border: 1.5px solid var(--brand-600);
-    border-radius: 8px;
+/* عمود الصفحة: الجزء واسم السورة فوق الإطار ثم الصفحة */
+.page-column { display: flex; flex-direction: column; width: min(720px, 94vw); }
+.page-column .mushaf-page { width: 100%; }
+.page-topbar {
+    display: flex; justify-content: space-between; align-items: flex-end; gap: 0.5rem;
+    padding: 0 clamp(0.6rem, 3vw, 1.6rem) 0.4rem;
+    font-family: 'Amiri Quran', 'Traditional Arabic', serif;
 }
-/* ميداليتان زخرفيتان على طرفي الشريط */
-.page-head::before, .page-head::after {
-    content: ""; position: absolute; top: 50%; transform: translateY(-50%);
-    width: 24px; height: 24px;
-    background: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='24' height='24'%3E%3Cg fill='none' stroke='%231f7a54' stroke-width='1.1'%3E%3Ccircle cx='12' cy='12' r='9.5'/%3E%3Cpath d='M12 3 L21 12 L12 21 L3 12 Z'/%3E%3Ccircle cx='12' cy='12' r='2.6' fill='%23b8873b' stroke='none'/%3E%3C/g%3E%3C/svg%3E") center/contain no-repeat;
-    background-color: var(--paper); border-radius: 50%;
-}
-.page-head::before { right: 4px; }
-.page-head::after { left: 4px; }
-.ph-surah { font-size: 0.95rem; font-weight: 700; color: var(--brand-700); }
-.ph-juz { font-size: 0.85rem; font-weight: 700; color: var(--brand-700); }
+.pt-surah { font-size: clamp(1rem, 3.4vw, 1.35rem); font-weight: 700; color: var(--brand-700); }
+.pt-juz { font-size: clamp(0.9rem, 3vw, 1.2rem); font-weight: 700; color: var(--brand-700); }
 /* رقم الصفحة بزخرفة أسفل الإطار */
 .page-badge {
     width: fit-content; margin: 1.5rem auto 0.6rem;
@@ -754,14 +743,11 @@ onUnmounted(() => {
     .page-wrap { padding: 0.9rem 0.5rem 6rem; }
     .nav { display: none; }
     /* إطار أنحف على الجوال */
-    .mushaf-page { width: 97vw; border-width: 20px; padding: 0.7rem 0.7rem 0.9rem; }
-    /* ترويسة مضغوطة وموسّطة على الجوال */
-    .page-head { padding: 0.4rem 2rem; gap: 0.25rem 1rem; }
-    .page-head::before, .page-head::after { width: 18px; height: 18px; }
-    .page-head::before { right: 3px; }
-    .page-head::after { left: 3px; }
-    .ph-surah { font-size: 0.76rem; }
-    .ph-juz { font-size: 0.7rem; }
+    .page-column { width: 97vw; }
+    .mushaf-page { border-width: 20px; padding: 0.7rem 0.7rem 0.9rem; }
+    .page-topbar { padding: 0 0.6rem 0.3rem; }
+    .pt-surah { font-size: 0.95rem; }
+    .pt-juz { font-size: 0.85rem; }
     .surah-name { font-size: 1.2rem; }
     .basmalah { font-size: 1.1rem; }
     .dock { gap: 0.3rem; padding: 0.4rem 0.5rem; }
