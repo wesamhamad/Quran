@@ -466,7 +466,6 @@ onUnmounted(() => {
                     <span class="ph-surah">{{ surahs.map(s => 'سورة ' + s.name_arabic).join(' · ') }}</span>
                     <span class="ph-juz" v-if="juz">{{ juzLabel(juz) }}</span>
                 </div>
-                <div class="ph-divider"></div>
 
                 <template v-for="line in lines" :key="line.line_number">
                     <div v-if="line.start_surah" class="surah-banner">
@@ -628,14 +627,28 @@ onUnmounted(() => {
     opacity: 0.65;
     pointer-events: none;
 }
-/* ترويسة الصفحة داخل الإطار (اسم السورة يمين + الجزء يسار) */
+/* شريط الترويسة الزخرفي (اسم السورة يمين + الجزء يسار) بميداليات على الطرفين */
 .page-head {
+    position: relative;
     display: flex; justify-content: space-between; align-items: center; gap: 0.5rem;
-    font-family: 'Segoe UI', Tahoma, sans-serif; margin-bottom: 0.6rem;
+    margin-bottom: 1rem; padding: 0.5rem 2.6rem;
+    font-family: 'Segoe UI', Tahoma, sans-serif;
+    background: var(--brand-soft);
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16'%3E%3Cpath d='M8 2 L14 8 L8 14 L2 8 Z' fill='none' stroke='%231f7a54' stroke-width='0.6' opacity='0.35'/%3E%3C/svg%3E");
+    border: 1.5px solid var(--brand-600);
+    border-radius: 8px;
 }
-.ph-surah { font-size: 0.95rem; font-weight: 700; color: var(--brand); }
-.ph-juz { font-size: 0.85rem; font-weight: 600; color: var(--gold-dark); }
-.ph-divider { height: 1.5px; background: linear-gradient(90deg, transparent, var(--gold) 15%, var(--gold) 85%, transparent); opacity: 0.7; margin-bottom: 1rem; }
+/* ميداليتان زخرفيتان على طرفي الشريط */
+.page-head::before, .page-head::after {
+    content: ""; position: absolute; top: 50%; transform: translateY(-50%);
+    width: 24px; height: 24px;
+    background: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='24' height='24'%3E%3Cg fill='none' stroke='%231f7a54' stroke-width='1.1'%3E%3Ccircle cx='12' cy='12' r='9.5'/%3E%3Cpath d='M12 3 L21 12 L12 21 L3 12 Z'/%3E%3Ccircle cx='12' cy='12' r='2.6' fill='%23b8873b' stroke='none'/%3E%3C/g%3E%3C/svg%3E") center/contain no-repeat;
+    background-color: var(--paper); border-radius: 50%;
+}
+.page-head::before { right: 4px; }
+.page-head::after { left: 4px; }
+.ph-surah { font-size: 0.95rem; font-weight: 700; color: var(--brand-700); }
+.ph-juz { font-size: 0.85rem; font-weight: 700; color: var(--brand-700); }
 /* رقم الصفحة بزخرفة أسفل الإطار */
 .page-badge {
     width: fit-content; margin: 1.2rem auto 0;
