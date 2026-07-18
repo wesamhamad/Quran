@@ -486,9 +486,7 @@ onUnmounted(() => {
                 <template v-for="line in lines" :key="line.line_number">
                     <div v-if="line.start_surah" class="surah-banner">
                         <div class="surah-name">{{ line.start_surah.name_uthmani }}</div>
-                        <div v-if="line.start_surah.bismillah_pre" class="basmalah">
-                            بِسْمِ ٱللَّهِ ٱلرَّحْمَـٰنِ ٱلرَّحِيمِ
-                        </div>
+                        <div v-if="line.start_surah.bismillah_pre" class="basmalah">﷽</div>
                     </div>
 
                     <div class="qline" :class="{ centered: centeredPage }" :style="{ fontFamily: pageFont }">
@@ -663,7 +661,7 @@ onUnmounted(() => {
     font-size: clamp(1.05rem, 4.2cqw, 1.7rem); font-weight: 700; color: var(--brand-700);
     padding-bottom: 0.15em; line-height: 1;
 }
-.basmalah { font-family: 'Amiri Quran', serif; font-size: 1.35rem; margin-top: 0.5rem; color: var(--paper-ink); opacity: 0.85; }
+.basmalah { font-family: 'Amiri Quran', serif; font-size: clamp(1.4rem, 7.6cqw, 2.5rem); line-height: 1; margin-top: 0.4rem; color: var(--paper-ink); white-space: nowrap; }
 
 /* أزرار التنقّل الجانبية — دائرية شبحية عائمة */
 .nav {
