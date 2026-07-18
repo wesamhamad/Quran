@@ -602,7 +602,7 @@ onUnmounted(() => {
 .chip.toggle.on { background: var(--brand-soft); color: var(--brand); border-color: var(--brand-200); font-weight: 600; }
 .memo-hint { text-align: center; margin: 0.2rem 1rem 0; font-size: 0.8rem; color: var(--brand); }
 .word.blurred { color: transparent !important; text-shadow: 0 0 12px var(--paper-ink); user-select: none; }
-.word.blurred.end { color: var(--gold) !important; text-shadow: none; }
+.word.blurred.end { color: var(--brand-600) !important; text-shadow: none; }
 
 .page-wrap { flex: 1; display: flex; align-items: flex-start; justify-content: center; padding: 1rem 1rem 7rem; }
 
@@ -631,15 +631,15 @@ onUnmounted(() => {
 .page-badge {
     width: fit-content; margin: 0.9rem auto 0;
     font-family: 'Segoe UI', Tahoma, sans-serif; font-weight: 700; font-size: 0.85rem;
-    color: var(--gold-dark); background: var(--paper);
-    padding: 0.28rem 1.3rem; border: 1.5px solid var(--gold); border-radius: 999px;
-    box-shadow: 0 0 0 3px var(--paper), 0 0 0 4px rgba(184, 135, 59, 0.35);
+    color: var(--brand-700); background: var(--paper);
+    padding: 0.3rem 1.5rem; border: 1.5px solid var(--brand-600); border-radius: 999px;
+    box-shadow: inset 0 0 0 2.5px var(--paper), inset 0 0 0 3.5px var(--brand-200);
 }
 
 .qline {
     /* محاذاة QCF الطبيعية: خط المصحف مصمّم ليملأ السطر بمسافاته الخاصة —
-       بلا space-between حتى تتّصل خطوط مواضع السجدة والوصلات فوق الكلمات */
-    display: flex; justify-content: flex-start; align-items: center; direction: rtl;
+       توسيط ليكون الهامش يميناً ويساراً متساوياً تماماً */
+    display: flex; justify-content: center; align-items: center; direction: rtl;
     font-size: clamp(0.85rem, 5.7cqw, 2.3rem);
     line-height: 2.0; color: var(--paper-ink); white-space: nowrap;
 }
@@ -647,7 +647,7 @@ onUnmounted(() => {
 .qline.centered { justify-content: center; }
 .word { cursor: pointer; transition: background 0.15s, color 0.15s; border-radius: 8px; padding: 0 0.04em; }
 .word:hover { background: var(--brand-soft); }
-.word.end { color: var(--gold); }
+.word.end { color: var(--brand-600); }
 .word.playing { background: var(--brand-soft); }
 .word.wordlit { background: var(--brand); color: #fff; }
 .word.selected { background: var(--brand-soft); box-shadow: 0 0 0 1.5px var(--brand-200); }
