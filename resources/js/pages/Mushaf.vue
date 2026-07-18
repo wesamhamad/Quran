@@ -582,12 +582,28 @@ onUnmounted(() => {
 /* ورقة المصحف العائمة */
 .mushaf-page {
     container-type: inline-size;
+    position: relative;
     width: min(720px, 94vw);
     background: var(--paper);
-    border: 1px solid var(--border);
-    border-radius: 24px;
-    padding: clamp(1.2rem, 3.5vw, 2.6rem) clamp(1rem, 3vw, 2.2rem);
+    border: 1.5px solid var(--gold);
+    border-radius: 22px;
+    padding: clamp(2rem, 5.5vw, 3.2rem) clamp(1.7rem, 5vw, 2.8rem);
     box-shadow: var(--shadow-md);
+}
+/* برواز بنقش هندسي (هوية جامعة القصيم) حول الصفحة */
+.mushaf-page::before {
+    content: "";
+    position: absolute;
+    inset: 7px;
+    border-radius: 15px;
+    padding: 13px;
+    background: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='18' height='18' viewBox='0 0 18 18'%3E%3Cpath d='M9 1 L17 9 L9 17 L1 9 Z' fill='none' stroke='%2325935f' stroke-width='1'/%3E%3Cpath d='M9 5.2 L12.8 9 L9 12.8 L5.2 9 Z' fill='none' stroke='%23c6a15a' stroke-width='0.9'/%3E%3C/svg%3E") repeat;
+    -webkit-mask: linear-gradient(#000 0 0) content-box, linear-gradient(#000 0 0);
+    -webkit-mask-composite: xor;
+    mask: linear-gradient(#000 0 0) content-box, linear-gradient(#000 0 0);
+    mask-composite: exclude;
+    opacity: 0.85;
+    pointer-events: none;
 }
 .qline {
     /* محاذاة QCF الطبيعية: خط المصحف مصمّم ليملأ السطر بمسافاته الخاصة —
