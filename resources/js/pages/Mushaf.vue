@@ -590,13 +590,14 @@ onUnmounted(() => {
     box-shadow: var(--shadow-md);
 }
 .qline {
-    display: flex; justify-content: space-between; align-items: center; direction: rtl;
-    gap: 0.12em;
+    /* محاذاة QCF الطبيعية: خط المصحف مصمّم ليملأ السطر بمسافاته الخاصة —
+       بلا space-between حتى تتّصل خطوط مواضع السجدة والوصلات فوق الكلمات */
+    display: flex; justify-content: flex-start; align-items: center; direction: rtl;
     font-size: clamp(0.85rem, 5.7cqw, 2.3rem);
     line-height: 2.15; color: var(--paper-ink); white-space: nowrap;
 }
-/* صفحات موسّطة (الفاتحة/بداية البقرة) — بلا فراغات ممدودة */
-.qline.centered { justify-content: center; gap: 0.4em; }
+/* صفحات موسّطة (الفاتحة/بداية البقرة) */
+.qline.centered { justify-content: center; }
 .word { cursor: pointer; transition: background 0.15s, color 0.15s; border-radius: 8px; padding: 0 0.04em; }
 .word:hover { background: var(--brand-soft); }
 .word.end { color: var(--gold); }
