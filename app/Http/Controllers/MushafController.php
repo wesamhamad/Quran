@@ -42,6 +42,7 @@ class MushafController extends Controller
                     $startSurah = [
                         'id'            => $s->id,
                         'name_arabic'   => $s->name_arabic,
+                        'name_uthmani'  => $s->name_uthmani ?: ('سورة '.$s->name_arabic),
                         'bismillah_pre' => (bool) $s->bismillah_pre,
                     ];
                 }

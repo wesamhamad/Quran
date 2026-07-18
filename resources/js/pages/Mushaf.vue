@@ -485,7 +485,7 @@ onUnmounted(() => {
                 <div class="mushaf-page">
                 <template v-for="line in lines" :key="line.line_number">
                     <div v-if="line.start_surah" class="surah-banner">
-                        <div class="surah-name">سورة {{ line.start_surah.name_arabic }}</div>
+                        <div class="surah-name">{{ line.start_surah.name_uthmani }}</div>
                         <div v-if="line.start_surah.bismillah_pre" class="basmalah">
                             بِسْمِ ٱللَّهِ ٱلرَّحْمَـٰنِ ٱلرَّحِيمِ
                         </div>
@@ -653,12 +653,16 @@ onUnmounted(() => {
 .word.selected { background: var(--brand-soft); box-shadow: 0 0 0 1.5px var(--brand-200); }
 
 /* لافتة السورة — خطوط رفيعة أنيقة */
-.surah-banner { text-align: center; margin: 1.1rem 0 0.3rem; }
+.surah-banner { text-align: center; margin: 1.2rem 0 0.3rem; }
+/* لافتة اسم السورة بإطار زخرفي (public/surah-banner.png) */
 .surah-name {
-    display: flex; align-items: center; gap: 0.9rem; justify-content: center;
-    font-family: 'Amiri Quran', 'Traditional Arabic', serif; font-size: 1.5rem; font-weight: 700; color: var(--brand);
+    display: inline-flex; align-items: center; justify-content: center;
+    width: min(90%, 560px); aspect-ratio: 2107 / 245; margin: 0 auto;
+    background: url('/surah-banner.png') center / 100% 100% no-repeat;
+    font-family: 'Amiri Quran', 'Traditional Arabic', serif;
+    font-size: clamp(1.05rem, 4.2cqw, 1.7rem); font-weight: 700; color: var(--brand-700);
+    padding-bottom: 0.15em; line-height: 1;
 }
-.surah-name::before, .surah-name::after { content: ""; flex: 1; height: 1px; background: var(--border); max-width: 120px; }
 .basmalah { font-family: 'Amiri Quran', serif; font-size: 1.35rem; margin-top: 0.5rem; color: var(--paper-ink); opacity: 0.85; }
 
 /* أزرار التنقّل الجانبية — دائرية شبحية عائمة */
