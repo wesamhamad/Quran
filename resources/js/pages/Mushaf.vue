@@ -614,7 +614,7 @@ onUnmounted(() => {
     background: var(--paper);
     border: clamp(26px, 6vw, 40px) solid transparent;
     border-image: url('/freame-green.jpg?v=2') 66 round;
-    padding: clamp(0.8rem, 3vw, 1.8rem) clamp(0.8rem, 3vw, 1.8rem) clamp(1rem, 3vw, 1.8rem);
+    padding: clamp(1rem, 3vw, 1.8rem) clamp(0.3rem, 1.2vw, 0.7rem) clamp(1rem, 3vw, 1.6rem);
     box-shadow: var(--shadow-md);
 }
 /* عمود الصفحة: الجزء واسم السورة فوق الإطار ثم الصفحة */
@@ -640,7 +640,7 @@ onUnmounted(() => {
     /* محاذاة QCF الطبيعية: خط المصحف مصمّم ليملأ السطر بمسافاته الخاصة —
        توسيط ليكون الهامش يميناً ويساراً متساوياً تماماً */
     display: flex; justify-content: center; align-items: center; direction: rtl;
-    font-size: clamp(0.85rem, 5.7cqw, 2.3rem);
+    font-size: clamp(0.85rem, 6.0cqw, 2.4rem);
     line-height: 2.0; color: var(--paper-ink); white-space: nowrap;
 }
 /* صفحات موسّطة (الفاتحة/بداية البقرة) */
@@ -653,7 +653,7 @@ onUnmounted(() => {
 .word.selected { background: var(--brand-soft); box-shadow: 0 0 0 1.5px var(--brand-200); }
 
 /* لافتة السورة — خطوط رفيعة أنيقة */
-.surah-banner { text-align: center; margin: 1.2rem 0 0.3rem; }
+.surah-banner { text-align: center; margin: 1.2rem 0 1.1rem; }
 /* لافتة اسم السورة بإطار زخرفي (public/surah-banner.png) */
 .surah-name {
     display: inline-flex; align-items: center; justify-content: center;
