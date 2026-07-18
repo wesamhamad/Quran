@@ -613,7 +613,7 @@ onUnmounted(() => {
     width: min(720px, 94vw);
     background: var(--paper);
     border: clamp(26px, 6vw, 40px) solid transparent;
-    border-image: url('/freame-green.jpg') 66 round;
+    border-image: url('/freame-green.jpg?v=2') 66 round;
     padding: clamp(0.8rem, 3vw, 1.8rem) clamp(0.8rem, 3vw, 1.8rem) clamp(1rem, 3vw, 1.8rem);
     box-shadow: var(--shadow-md);
 }
