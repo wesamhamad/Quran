@@ -30,6 +30,16 @@ const pageFont = `p${props.page}`;
 // صفحتا الفاتحة وبداية البقرة تُعرضان موسّطتين (كالمصحف) لتفادي الفراغات الكبيرة
 const centeredPage = props.page <= 2;
 
+// اسم الجزء بالحروف (كمصحف المدينة)
+const JUZ_ORDINALS = ['', 'الأول', 'الثاني', 'الثالث', 'الرابع', 'الخامس', 'السادس', 'السابع', 'الثامن', 'التاسع', 'العاشر', 'الحادي عشر', 'الثاني عشر', 'الثالث عشر', 'الرابع عشر', 'الخامس عشر', 'السادس عشر', 'السابع عشر', 'الثامن عشر', 'التاسع عشر', 'العشرون', 'الحادي والعشرون', 'الثاني والعشرون', 'الثالث والعشرون', 'الرابع والعشرون', 'الخامس والعشرون', 'السادس والعشرون', 'السابع والعشرون', 'الثامن والعشرون', 'التاسع والعشرون', 'الثلاثون'];
+function juzLabel(n: number | null): string {
+    if (!n) return '';
+    return `الجزء ${JUZ_ORDINALS[n] ?? n}`;
+}
+function pageArabic(n: number): string {
+    return String(n).replace(/[0-9]/g, (d) => '٠١٢٣٤٥٦٧٨٩'[+d]);
+}
+
 /* ---------- وضع الحفظ ---------- */
 const memoMode = ref(false);
 const revealed = ref<Set<string>>(new Set());
@@ -454,7 +464,7 @@ onUnmounted(() => {
                 <!-- ترويسة داخل الإطار: اسم السورة (يمين) والجزء (يسار) — كمصحف المدينة -->
                 <div class="page-head">
                     <span class="ph-surah">{{ surahs.map(s => 'سورة ' + s.name_arabic).join(' · ') }}</span>
-                    <span class="ph-juz" v-if="juz">الجزء {{ juz }}</span>
+                    <span class="ph-juz" v-if="juz">{{ juzLabel(juz) }}</span>
                 </div>
                 <div class="ph-divider"></div>
 
@@ -483,6 +493,9 @@ onUnmounted(() => {
                         >{{ w.code }}</span>
                     </div>
                 </template>
+
+                <!-- رقم الصفحة بزخرفة أسفل الإطار (كمصحف المدينة) -->
+                <div class="page-badge">{{ pageArabic(page) }}</div>
             </div>
 
             <button class="nav prev" :disabled="!prev" @click="go(prev)" aria-label="السابقة">›</button>
@@ -577,40 +590,60 @@ onUnmounted(() => {
 
 .page-wrap { flex: 1; display: flex; align-items: flex-start; justify-content: center; padding: 1rem 1rem 7rem; }
 
-/* ورقة المصحف العائمة */
+/* ورقة المصحف — برواز مزخرف بإطار داخلي مزدوج (كمصحف المدينة) */
 .mushaf-page {
     container-type: inline-size;
     position: relative;
     width: min(720px, 94vw);
     background: var(--paper);
     border: 1.5px solid var(--gold);
-    border-radius: 22px;
-    padding: clamp(2rem, 5.5vw, 3.2rem) clamp(1.7rem, 5vw, 2.8rem);
+    border-radius: 14px;
+    padding: clamp(2.6rem, 7vw, 4rem) clamp(2.1rem, 6vw, 3.4rem) clamp(2.2rem, 6vw, 3.4rem);
     box-shadow: var(--shadow-md);
 }
-/* برواز بنقش هندسي (هوية جامعة القصيم) حول الصفحة */
+/* البرواز الزخرفي الخارجي (نقش ذهبي/أخضر) */
 .mushaf-page::before {
     content: "";
     position: absolute;
-    inset: 7px;
-    border-radius: 15px;
-    padding: 13px;
-    background: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='18' height='18' viewBox='0 0 18 18'%3E%3Cpath d='M9 1 L17 9 L9 17 L1 9 Z' fill='none' stroke='%2325935f' stroke-width='1'/%3E%3Cpath d='M9 5.2 L12.8 9 L9 12.8 L5.2 9 Z' fill='none' stroke='%23c6a15a' stroke-width='0.9'/%3E%3C/svg%3E") repeat;
+    inset: 6px;
+    border-radius: 9px;
+    padding: 15px;
+    background: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='20' height='20' viewBox='0 0 20 20'%3E%3Cpath d='M10 0.5 L19.5 10 L10 19.5 L0.5 10 Z' fill='none' stroke='%23b8873b' stroke-width='1.1'/%3E%3Cpath d='M10 5 L15 10 L10 15 L5 10 Z' fill='none' stroke='%2325935f' stroke-width='0.85'/%3E%3Ccircle cx='10' cy='10' r='1' fill='%23b8873b'/%3E%3C/svg%3E") repeat;
     -webkit-mask: linear-gradient(#000 0 0) content-box, linear-gradient(#000 0 0);
     -webkit-mask-composite: xor;
     mask: linear-gradient(#000 0 0) content-box, linear-gradient(#000 0 0);
     mask-composite: exclude;
-    opacity: 0.85;
+    opacity: 0.9;
     pointer-events: none;
 }
-/* ترويسة الصفحة داخل الإطار (اسم السورة + الجزء) */
+/* الإطار الداخلي المزدوج حول النص */
+.mushaf-page::after {
+    content: "";
+    position: absolute;
+    inset: 28px;
+    border-radius: 5px;
+    border: 1.5px solid var(--gold);
+    outline: 1px solid var(--gold);
+    outline-offset: 3px;
+    opacity: 0.7;
+    pointer-events: none;
+}
+/* ترويسة الصفحة داخل الإطار (اسم السورة يمين + الجزء يسار) */
 .page-head {
     display: flex; justify-content: space-between; align-items: center; gap: 0.5rem;
-    font-family: 'Segoe UI', Tahoma, sans-serif; margin-bottom: 0.5rem;
+    font-family: 'Segoe UI', Tahoma, sans-serif; margin-bottom: 0.6rem;
 }
 .ph-surah { font-size: 0.95rem; font-weight: 700; color: var(--brand); }
-.ph-juz { font-size: 0.85rem; font-weight: 600; color: var(--gold); }
-.ph-divider { height: 1.5px; background: linear-gradient(90deg, transparent, var(--gold) 20%, var(--gold) 80%, transparent); opacity: 0.6; margin-bottom: 1rem; }
+.ph-juz { font-size: 0.85rem; font-weight: 600; color: var(--gold-dark); }
+.ph-divider { height: 1.5px; background: linear-gradient(90deg, transparent, var(--gold) 15%, var(--gold) 85%, transparent); opacity: 0.7; margin-bottom: 1rem; }
+/* رقم الصفحة بزخرفة أسفل الإطار */
+.page-badge {
+    width: fit-content; margin: 1.2rem auto 0;
+    font-family: 'Segoe UI', Tahoma, sans-serif; font-weight: 700; font-size: 0.85rem;
+    color: var(--gold-dark); background: var(--paper);
+    padding: 0.28rem 1.3rem; border: 1.5px solid var(--gold); border-radius: 999px;
+    box-shadow: 0 0 0 3px var(--paper), 0 0 0 4px rgba(184, 135, 59, 0.35);
+}
 
 .qline {
     /* محاذاة QCF الطبيعية: خط المصحف مصمّم ليملأ السطر بمسافاته الخاصة —
@@ -718,7 +751,12 @@ onUnmounted(() => {
     .chip { font-size: 0.72rem; padding: 0.2rem 0.6rem; }
     .page-wrap { padding: 0.9rem 0.5rem 6rem; }
     .nav { display: none; }
-    .mushaf-page { width: 96vw; border-radius: 18px; }
+    /* إطار أنحف على الجوال حتى يبقى النص واضحاً */
+    .mushaf-page { width: 97vw; border-radius: 12px; padding: 2rem 1.4rem 1.6rem; }
+    .mushaf-page::before { inset: 4px; padding: 10px; }
+    .mushaf-page::after { inset: 19px; }
+    .ph-surah { font-size: 0.82rem; }
+    .ph-juz { font-size: 0.75rem; }
     .surah-name { font-size: 1.2rem; }
     .basmalah { font-size: 1.1rem; }
     .dock { gap: 0.3rem; padding: 0.4rem 0.5rem; }
