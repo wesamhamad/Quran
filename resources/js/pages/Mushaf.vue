@@ -596,19 +596,19 @@ onUnmounted(() => {
     position: relative;
     width: min(720px, 94vw);
     background: var(--paper);
-    border: 1.5px solid var(--gold);
-    border-radius: 14px;
-    padding: clamp(2.6rem, 7vw, 4rem) clamp(2.1rem, 6vw, 3.4rem) clamp(2.2rem, 6vw, 3.4rem);
+    border: 1.5px solid var(--brand-600);
+    border-radius: 12px;
+    padding: clamp(2.8rem, 7.5vw, 4.2rem) clamp(2.2rem, 6vw, 3.4rem) clamp(2.2rem, 6vw, 3.4rem);
     box-shadow: var(--shadow-md);
 }
-/* البرواز الزخرفي الخارجي (نقش ذهبي/أخضر) */
+/* البرواز الزخرفي الخارجي — نمط زهرة الحياة المتشابك (أخضر تقليدي) */
 .mushaf-page::before {
     content: "";
     position: absolute;
-    inset: 6px;
-    border-radius: 9px;
-    padding: 15px;
-    background: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='20' height='20' viewBox='0 0 20 20'%3E%3Cpath d='M10 0.5 L19.5 10 L10 19.5 L0.5 10 Z' fill='none' stroke='%23b8873b' stroke-width='1.1'/%3E%3Cpath d='M10 5 L15 10 L10 15 L5 10 Z' fill='none' stroke='%2325935f' stroke-width='0.85'/%3E%3Ccircle cx='10' cy='10' r='1' fill='%23b8873b'/%3E%3C/svg%3E") repeat;
+    inset: 5px;
+    border-radius: 8px;
+    padding: 17px;
+    background: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='22' height='22'%3E%3Cg fill='none' stroke='%231f7a54' stroke-width='0.85'%3E%3Ccircle cx='11' cy='11' r='10'/%3E%3Ccircle cx='0' cy='11' r='10'/%3E%3Ccircle cx='22' cy='11' r='10'/%3E%3Ccircle cx='11' cy='0' r='10'/%3E%3Ccircle cx='11' cy='22' r='10'/%3E%3Ccircle cx='11' cy='11' r='2.2' fill='%23b8873b' stroke='none'/%3E%3C/g%3E%3C/svg%3E") repeat;
     -webkit-mask: linear-gradient(#000 0 0) content-box, linear-gradient(#000 0 0);
     -webkit-mask-composite: xor;
     mask: linear-gradient(#000 0 0) content-box, linear-gradient(#000 0 0);
@@ -616,16 +616,16 @@ onUnmounted(() => {
     opacity: 0.9;
     pointer-events: none;
 }
-/* الإطار الداخلي المزدوج حول النص */
+/* الإطار الداخلي المزدوج حول النص (أخضر) */
 .mushaf-page::after {
     content: "";
     position: absolute;
-    inset: 28px;
-    border-radius: 5px;
-    border: 1.5px solid var(--gold);
-    outline: 1px solid var(--gold);
+    inset: 30px;
+    border-radius: 4px;
+    border: 1.5px solid var(--brand-600);
+    outline: 1px solid var(--brand-600);
     outline-offset: 3px;
-    opacity: 0.7;
+    opacity: 0.65;
     pointer-events: none;
 }
 /* ترويسة الصفحة داخل الإطار (اسم السورة يمين + الجزء يسار) */
