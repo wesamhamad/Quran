@@ -604,43 +604,16 @@ onUnmounted(() => {
 
 .page-wrap { flex: 1; display: flex; align-items: flex-start; justify-content: center; padding: 1rem 1rem 7rem; }
 
-/* ورقة المصحف — برواز مزخرف بإطار داخلي مزدوج (كمصحف المدينة) */
+/* ورقة المصحف — برواز من صورة زخرفية (public/freame.jpeg) */
 .mushaf-page {
     container-type: inline-size;
     position: relative;
     width: min(720px, 94vw);
     background: var(--paper);
-    border: 1.5px solid var(--brand-600);
-    border-radius: 12px;
-    padding: clamp(2.8rem, 7.5vw, 4.2rem) clamp(2.2rem, 6vw, 3.4rem) clamp(2.2rem, 6vw, 3.4rem);
+    border: clamp(26px, 6vw, 40px) solid transparent;
+    border-image: url('/freame.jpeg') 66 round;
+    padding: clamp(0.8rem, 3vw, 1.8rem) clamp(0.8rem, 3vw, 1.8rem) clamp(1rem, 3vw, 1.8rem);
     box-shadow: var(--shadow-md);
-}
-/* البرواز الزخرفي الخارجي — نمط زهرة الحياة المتشابك (أخضر تقليدي) */
-.mushaf-page::before {
-    content: "";
-    position: absolute;
-    inset: 5px;
-    border-radius: 8px;
-    padding: 17px;
-    background: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='22' height='22'%3E%3Cg fill='none' stroke='%231f7a54' stroke-width='0.85'%3E%3Ccircle cx='11' cy='11' r='10'/%3E%3Ccircle cx='0' cy='11' r='10'/%3E%3Ccircle cx='22' cy='11' r='10'/%3E%3Ccircle cx='11' cy='0' r='10'/%3E%3Ccircle cx='11' cy='22' r='10'/%3E%3Ccircle cx='11' cy='11' r='2.2' fill='%23b8873b' stroke='none'/%3E%3C/g%3E%3C/svg%3E") repeat;
-    -webkit-mask: linear-gradient(#000 0 0) content-box, linear-gradient(#000 0 0);
-    -webkit-mask-composite: xor;
-    mask: linear-gradient(#000 0 0) content-box, linear-gradient(#000 0 0);
-    mask-composite: exclude;
-    opacity: 0.9;
-    pointer-events: none;
-}
-/* الإطار الداخلي المزدوج حول النص (أخضر) */
-.mushaf-page::after {
-    content: "";
-    position: absolute;
-    inset: 30px;
-    border-radius: 4px;
-    border: 1.5px solid var(--brand-600);
-    outline: 1px solid var(--brand-600);
-    outline-offset: 3px;
-    opacity: 0.65;
-    pointer-events: none;
 }
 /* شريط الترويسة الزخرفي (اسم السورة يمين + الجزء يسار) بميداليات على الطرفين */
 .page-head {
@@ -780,10 +753,8 @@ onUnmounted(() => {
     .chip { font-size: 0.72rem; padding: 0.2rem 0.6rem; }
     .page-wrap { padding: 0.9rem 0.5rem 6rem; }
     .nav { display: none; }
-    /* إطار أنحف على الجوال حتى يبقى النص واضحاً */
-    .mushaf-page { width: 97vw; border-radius: 12px; padding: 1.9rem 1.4rem 2rem; }
-    .mushaf-page::before { inset: 4px; padding: 10px; }
-    .mushaf-page::after { inset: 19px; }
+    /* إطار أنحف على الجوال */
+    .mushaf-page { width: 97vw; border-width: 20px; padding: 0.7rem 0.7rem 0.9rem; }
     /* ترويسة مضغوطة وموسّطة على الجوال */
     .page-head { padding: 0.4rem 2rem; gap: 0.25rem 1rem; }
     .page-head::before, .page-head::after { width: 18px; height: 18px; }
