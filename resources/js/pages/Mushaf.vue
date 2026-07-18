@@ -645,8 +645,9 @@ onUnmounted(() => {
 /* شريط الترويسة الزخرفي (اسم السورة يمين + الجزء يسار) بميداليات على الطرفين */
 .page-head {
     position: relative;
-    display: flex; justify-content: center; align-items: center; gap: clamp(1.5rem, 6vw, 3.5rem);
-    margin-bottom: 1rem; padding: 0.5rem 2.6rem;
+    display: flex; justify-content: center; align-items: center; flex-wrap: wrap; text-align: center;
+    gap: 0.4rem clamp(1.5rem, 6vw, 3.5rem);
+    margin-bottom: 1rem; padding: 0.5rem 2.8rem;
     font-family: 'Segoe UI', Tahoma, sans-serif;
     background: var(--brand-soft);
     background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16'%3E%3Cpath d='M8 2 L14 8 L8 14 L2 8 Z' fill='none' stroke='%231f7a54' stroke-width='0.6' opacity='0.35'/%3E%3C/svg%3E");
@@ -666,7 +667,7 @@ onUnmounted(() => {
 .ph-juz { font-size: 0.85rem; font-weight: 700; color: var(--brand-700); }
 /* رقم الصفحة بزخرفة أسفل الإطار */
 .page-badge {
-    width: fit-content; margin: 1.2rem auto 0;
+    width: fit-content; margin: 1.5rem auto 0.6rem;
     font-family: 'Segoe UI', Tahoma, sans-serif; font-weight: 700; font-size: 0.85rem;
     color: var(--gold-dark); background: var(--paper);
     padding: 0.28rem 1.3rem; border: 1.5px solid var(--gold); border-radius: 999px;
@@ -780,11 +781,16 @@ onUnmounted(() => {
     .page-wrap { padding: 0.9rem 0.5rem 6rem; }
     .nav { display: none; }
     /* إطار أنحف على الجوال حتى يبقى النص واضحاً */
-    .mushaf-page { width: 97vw; border-radius: 12px; padding: 2rem 1.4rem 1.6rem; }
+    .mushaf-page { width: 97vw; border-radius: 12px; padding: 1.9rem 1.4rem 2rem; }
     .mushaf-page::before { inset: 4px; padding: 10px; }
     .mushaf-page::after { inset: 19px; }
-    .ph-surah { font-size: 0.82rem; }
-    .ph-juz { font-size: 0.75rem; }
+    /* ترويسة مضغوطة وموسّطة على الجوال */
+    .page-head { padding: 0.4rem 2rem; gap: 0.25rem 1rem; }
+    .page-head::before, .page-head::after { width: 18px; height: 18px; }
+    .page-head::before { right: 3px; }
+    .page-head::after { left: 3px; }
+    .ph-surah { font-size: 0.76rem; }
+    .ph-juz { font-size: 0.7rem; }
     .surah-name { font-size: 1.2rem; }
     .basmalah { font-size: 1.1rem; }
     .dock { gap: 0.3rem; padding: 0.4rem 0.5rem; }
