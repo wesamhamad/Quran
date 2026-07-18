@@ -508,10 +508,10 @@ onUnmounted(() => {
                         >{{ w.code }}</span>
                     </div>
                 </template>
-
-                <!-- رقم الصفحة بزخرفة أسفل الإطار (كمصحف المدينة) -->
-                <div class="page-badge">{{ pageArabic(page) }}</div>
                 </div>
+
+                <!-- رقم الصفحة بزخرفة تحت الإطار (كمصحف المدينة) -->
+                <div class="page-badge">{{ pageArabic(page) }}</div>
             </div>
 
             <button class="nav prev" :disabled="!prev" @click="go(prev)" aria-label="السابقة">›</button>
@@ -629,7 +629,7 @@ onUnmounted(() => {
 .pt-juz { font-size: clamp(0.9rem, 3vw, 1.2rem); font-weight: 700; color: var(--brand-700); }
 /* رقم الصفحة بزخرفة أسفل الإطار */
 .page-badge {
-    width: fit-content; margin: 1.5rem auto 0.6rem;
+    width: fit-content; margin: 0.9rem auto 0;
     font-family: 'Segoe UI', Tahoma, sans-serif; font-weight: 700; font-size: 0.85rem;
     color: var(--gold-dark); background: var(--paper);
     padding: 0.28rem 1.3rem; border: 1.5px solid var(--gold); border-radius: 999px;
