@@ -29,7 +29,7 @@ const currentUrlReactive = computed(
             page.url,
             typeof window !== 'undefined'
                 ? window.location.origin
-                : 'http://localhost',
+                : 'http://localhost:8090',
         ).pathname,
 );
 

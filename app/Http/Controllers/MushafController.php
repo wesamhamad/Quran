@@ -3,14 +3,67 @@
 namespace App\Http\Controllers;
 
 use App\Models\AudioFile;
+use App\Models\Ayah;
 use App\Models\Reciter;
 use App\Models\Surah;
 use App\Models\Word;
+use Illuminate\Http\JsonResponse;
 use Inertia\Inertia;
 use Inertia\Response;
 
 class MushafController extends Controller
 {
+    /** اللغات المتاحة للترجمة (مطابقة لعمود language في جدول الترجمات). */
+    private const TRANSLATION_LANGS = ['english', 'french'];
+
+    /**
+     * ترجمات آيات الصفحة بترتيب القراءة (JSON للوحة الجانبية على اليمين).
+     */
+    public function translations(int $page): JsonResponse
+    {
+        $page = max(1, min(604, $page));
+
+        $lang = (string) request('lang', 'english');
+        if (! in_array($lang, self::TRANSLATION_LANGS, true)) {
+            $lang = 'english';
+        }
+
+        // معرّفات الآيات في الصفحة بترتيب القراءة (نفس ترتيب صفحة المصحف)
+        $ayahIds = Word::where('page_number', $page)
+            ->orderBy('line_number')
+            ->orderBy('ayah_id')
+            ->orderBy('position')
+            ->pluck('ayah_id')
+            ->unique()
+            ->values();
+
+        $ayahs = Ayah::with([
+            'surah:id,name_arabic,name_simple',
+            'translations' => fn ($q) => $q->where('language', $lang),
+        ])->whereIn('id', $ayahIds)->get()->keyBy('id');
+
+        $verses = $ayahIds->map(function ($id) use ($ayahs) {
+            $a = $ayahs->get($id);
+            if (! $a) {
+                return null;
+            }
+
+            return [
+                'verse_key'       => $a->verse_key,
+                'number_in_surah' => $a->number_in_surah,
+                'surah_name'      => $a->surah->name_arabic,
+                'surah_en'        => $a->surah->name_simple,
+                'text'            => $a->translations->first()?->text ?? '',
+            ];
+        })->filter()->values();
+
+        return response()->json([
+            'page'   => $page,
+            'lang'   => $lang,
+            'verses' => $verses,
+        ]);
+    }
+
     public function page(int $page = 1): Response
     {
         $page = max(1, min(604, $page));

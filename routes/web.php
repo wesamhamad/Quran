@@ -21,6 +21,11 @@ Route::get('/mushaf/{page?}', [MushafController::class, 'page'])
     ->where('page', '[0-9]+')
     ->name('mushaf.page');
 
+// ترجمات آيات الصفحة (JSON) للوحة الجانبية — إنجليزي/فرنسي
+Route::get('/api/mushaf/{page}/translations', [MushafController::class, 'translations'])
+    ->where('page', '[0-9]+')
+    ->name('mushaf.translations');
+
 // البحث في النص العثماني
 Route::get('/search', [SearchController::class, 'index'])->name('search');
 

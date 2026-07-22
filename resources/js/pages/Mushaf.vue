@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { Head, Link, router } from '@inertiajs/vue3';
-import { onMounted, onUnmounted, ref } from 'vue';
+import { onMounted, onUnmounted, ref, watch } from 'vue';
 import AppNav from '@/components/AppNav.vue';
 
 interface WordT { code: string; type: string; verse_key: string; pos: number }
@@ -51,6 +51,77 @@ function revealVerse(key: string) {
     const s = new Set(revealed.value);
     s.has(key) ? s.delete(key) : s.add(key);
     revealed.value = s;
+}
+
+/* ---------- لوحة الترجمة (يمين) — مثل مصحف جامعة الملك سعود ---------- */
+type Lang = 'none' | 'english' | 'french';
+interface TransVerse {
+    verse_key: string;
+    number_in_surah: number;
+    surah_name: string;
+    surah_en: string;
+    text: string;
+}
+const transLang = ref<Lang>('none');
+const transVerses = ref<TransVerse[]>([]);
+const transLoading = ref(false);
+const TRANS_HEAD: Record<Exclude<Lang, 'none'>, string> = {
+    english: 'Translation — Saheeh International',
+    french: 'Traduction — Muhammad Hamidullah',
+};
+
+async function loadTranslations(lang: Exclude<Lang, 'none'>) {
+    transLoading.value = true;
+    try {
+        const res = await fetch(`/api/mushaf/${props.page}/translations?lang=${lang}`, {
+            headers: { Accept: 'application/json' },
+        });
+        const data = await res.json();
+        transVerses.value = data.verses ?? [];
+    } finally {
+        transLoading.value = false;
+    }
+}
+function setLang(lang: Lang) {
+    transLang.value = lang;
+    try { localStorage.setItem('quran-trans-lang', lang); } catch { /* */ }
+    if (lang === 'none') { transVerses.value = []; return; }
+    loadTranslations(lang);
+}
+function focusVerse(key: string) {
+    selectedVerse.value = key;
+    scrollToVerse(key);
+}
+// إعادة تحميل الترجمة عند تغيّر الصفحة (Inertia يعيد استخدام نفس المكوّن)
+watch(() => props.page, () => {
+    if (transLang.value !== 'none') loadTranslations(transLang.value);
+    maybeAutoplay();
+});
+
+/* ---------- التلاوة المتواصلة عبر الصفحات ---------- */
+// إن وصلنا لهذه الصفحة نتيجة إكمال تلقائي، ابدأ تلاوتها فوراً
+function maybeAutoplay() {
+    try {
+        if (sessionStorage.getItem('quran-autoplay') === '1') {
+            sessionStorage.removeItem('quran-autoplay');
+            if (props.audio.length) playAt(0);
+        }
+    } catch { /* */ }
+}
+
+/* ---------- حجم النص (لكبار السن) ---------- */
+const MIN_SCALE = 0.9, MAX_SCALE = 1.8;
+const fontScale = ref(1);
+function persistScale() {
+    try { localStorage.setItem('quran-font-scale', String(fontScale.value)); } catch { /* */ }
+}
+function zoomIn() {
+    fontScale.value = Math.min(MAX_SCALE, Math.round((fontScale.value + 0.1) * 10) / 10);
+    persistScale();
+}
+function zoomOut() {
+    fontScale.value = Math.max(MIN_SCALE, Math.round((fontScale.value - 0.1) * 10) / 10);
+    persistScale();
 }
 
 /* ---------- التنقّل ---------- */
@@ -117,7 +188,16 @@ function absUrl(u: string): string {
 }
 
 function playAt(i: number) {
-    if (i < 0 || i >= props.audio.length) { stop(); return; }
+    if (i < 0 || i >= props.audio.length) {
+        // انتهت آيات الصفحة — تابع تلقائياً للصفحة التالية إن وُجدت
+        if (i >= props.audio.length && props.next) {
+            try { sessionStorage.setItem('quran-autoplay', '1'); } catch { /* */ }
+            router.visit(`/mushaf/${props.next}${props.reciterId ? `?reciter=${props.reciterId}` : ''}`);
+            return;
+        }
+        stop();
+        return;
+    }
     idx = i;
     const item = props.audio[i];
     activeVerse.value = item.verse_key;
@@ -447,6 +527,18 @@ onMounted(() => {
         localStorage.setItem('quran-last-page', String(props.page));
         if (props.reciterId) localStorage.setItem('quran-last-reciter', String(props.reciterId));
     } catch { /* */ }
+    // استعادة لغة الترجمة المختارة سابقاً
+    try {
+        const saved = localStorage.getItem('quran-trans-lang');
+        if (saved === 'english' || saved === 'french') setLang(saved);
+    } catch { /* */ }
+    // استعادة حجم النص المختار
+    try {
+        const s = parseFloat(localStorage.getItem('quran-font-scale') || '1');
+        if (s >= MIN_SCALE && s <= MAX_SCALE) fontScale.value = s;
+    } catch { /* */ }
+    // إن جئنا نتيجة إكمال تلقائي للتلاوة، ابدأ فوراً
+    maybeAutoplay();
 });
 onUnmounted(() => {
     window.removeEventListener('keydown', onKey);
@@ -468,14 +560,29 @@ onUnmounted(() => {
             <button class="chip toggle" :class="{ on: memoMode }" @click="toggleMemo">
                 {{ memoMode ? '✓ وضع الحفظ' : 'وضع الحفظ' }}
             </button>
+
+            <!-- اختيار لغة الترجمة — تظهر لوحة الآيات المترجمة على اليمين -->
+            <div class="lang-group" role="group" aria-label="لغة الترجمة">
+                <button class="chip lang" :class="{ on: transLang === 'none' }" @click="setLang('none')">العربية</button>
+                <button class="chip lang" :class="{ on: transLang === 'english' }" @click="setLang('english')">English</button>
+                <button class="chip lang" :class="{ on: transLang === 'french' }" @click="setLang('french')">Français</button>
+            </div>
+
+            <!-- حجم النص — لكبار السن -->
+            <div class="zoom-group" role="group" aria-label="حجم النص">
+                <span class="zoom-label">حجم النص</span>
+                <button class="zoom-btn" @click="zoomOut" :disabled="fontScale <= MIN_SCALE" aria-label="تصغير النص">−</button>
+                <span class="zoom-val">{{ Math.round(fontScale * 100) }}%</span>
+                <button class="zoom-btn" @click="zoomIn" :disabled="fontScale >= MAX_SCALE" aria-label="تكبير النص">+</button>
+            </div>
         </header>
         <p v-if="memoMode" class="memo-hint">وضع الحفظ مُفعّل — الكلمات مخفية، اضغط أي كلمة لكشف آيتها.</p>
 
         <!-- صفحة المصحف -->
-        <main class="page-wrap" @touchstart.passive="onTouchStart" @touchend.passive="onTouchEnd">
-            <button class="nav next" :disabled="!next" @click="go(next)" aria-label="التالية">‹</button>
+        <main class="page-wrap" :class="{ 'with-panel': transLang !== 'none' }" @touchstart.passive="onTouchStart" @touchend.passive="onTouchEnd">
+            <button class="nav next" :class="{ hidden: transLang !== 'none' }" :disabled="!next" @click="go(next)" aria-label="التالية">‹</button>
 
-            <div class="page-column">
+            <div class="page-column" :style="{ '--quran-scale': fontScale }">
                 <!-- الجزء (يمين) واسم السورة (يسار) فوق الإطار -->
                 <div class="page-topbar">
                     <span class="pt-juz" v-if="juz">{{ juzLabel(juz) }}</span>
@@ -512,8 +619,35 @@ onUnmounted(() => {
                 <div class="page-badge">{{ pageArabic(page) }}</div>
             </div>
 
-            <button class="nav prev" :disabled="!prev" @click="go(prev)" aria-label="السابقة">›</button>
+            <button class="nav prev" :class="{ hidden: transLang !== 'none' }" :disabled="!prev" @click="go(prev)" aria-label="السابقة">›</button>
         </main>
+
+        <!-- لوحة الترجمة على اليمين (إنجليزي/فرنسي) — كمصحف جامعة الملك سعود -->
+        <aside v-if="transLang !== 'none'" class="trans-panel" dir="ltr">
+            <header class="tp-head">
+                <span class="tp-title">{{ transLang === 'english' ? TRANS_HEAD.english : TRANS_HEAD.french }}</span>
+                <button class="tp-close" @click="setLang('none')" aria-label="إغلاق الترجمة">✕</button>
+            </header>
+            <div v-if="transLoading" class="tp-loading">…Loading</div>
+            <div v-else class="tp-list">
+                <template v-for="(v, i) in transVerses" :key="v.verse_key">
+                    <div
+                        v-if="i === 0 || v.surah_name !== transVerses[i - 1].surah_name"
+                        class="tp-surah"
+                    >{{ v.surah_en }} · {{ v.surah_name }}</div>
+                    <div
+                        class="tp-verse"
+                        :class="{ active: v.verse_key === activeVerse, selected: v.verse_key === selectedVerse }"
+                        @click="focusVerse(v.verse_key)"
+                    >
+                        <span class="tp-num">{{ v.number_in_surah }}</span>
+                        <p class="tp-text">{{ v.text }}</p>
+                    </div>
+                </template>
+                <p v-if="!transVerses.length" class="tp-loading">No translation available.</p>
+            </div>
+        </aside>
+        <div v-if="transLang !== 'none'" class="tp-backdrop" @click="setLang('none')"></div>
 
         <!-- مشغّل الصوت — رصيف عائم -->
         <footer class="player">
@@ -593,12 +727,35 @@ onUnmounted(() => {
 .mushaf-screen { min-height: 100vh; background: var(--canvas); display: flex; flex-direction: column; color: var(--text); }
 
 /* شريط أدوات صغير */
-.topbar { display: flex; justify-content: center; align-items: center; gap: 0.5rem; padding: 0.7rem 1.4rem 0.2rem; }
+.topbar { display: flex; flex-wrap: wrap; justify-content: center; align-items: center; gap: 0.5rem; padding: 0.7rem 1.4rem 0.2rem; }
 .chip { font-size: 0.8rem; color: var(--text-muted); background: var(--surface); border: 1px solid var(--border); padding: 0.3rem 0.9rem; border-radius: 999px; }
 .chip.toggle { cursor: pointer; font-family: inherit; }
 .chip.toggle:hover { color: var(--text); }
 .chip.toggle.on { background: var(--brand-soft); color: var(--brand); border-color: var(--brand-200); font-weight: 600; }
 .memo-hint { text-align: center; margin: 0.2rem 1rem 0; font-size: 0.8rem; color: var(--brand); }
+
+/* أزرار اختيار لغة الترجمة */
+.lang-group { display: inline-flex; gap: 0.3rem; }
+.chip.lang { cursor: pointer; font-family: inherit; }
+.chip.lang:hover { color: var(--text); }
+.chip.lang.on { background: var(--brand-soft); color: var(--brand); border-color: var(--brand-200); font-weight: 600; }
+
+/* التحكم بحجم النص — لكبار السن */
+.zoom-group {
+    display: inline-flex; align-items: center; gap: 0.25rem;
+    background: var(--surface); border: 1px solid var(--border); border-radius: 999px;
+    padding: 0.2rem 0.4rem;
+}
+.zoom-label { font-size: 0.78rem; color: var(--text-muted); padding: 0 0.35rem; white-space: nowrap; }
+.zoom-btn {
+    width: 28px; height: 28px; border-radius: 50%; border: 1px solid var(--brand-200);
+    background: var(--brand-soft); color: var(--brand); font-size: 1.15rem; line-height: 1;
+    cursor: pointer; display: grid; place-items: center; font-family: inherit; padding: 0;
+    transition: background 0.15s, transform 0.1s;
+}
+.zoom-btn:hover:not(:disabled) { background: var(--brand); color: #fff; transform: scale(1.08); }
+.zoom-btn:disabled { opacity: 0.35; cursor: default; }
+.zoom-val { min-width: 3ch; text-align: center; font-size: 0.8rem; font-weight: 700; color: var(--text); }
 .word.blurred { color: transparent !important; text-shadow: 0 0 12px var(--paper-ink); user-select: none; }
 .word.blurred.end { color: var(--brand-600) !important; text-shadow: none; }
 
@@ -611,12 +768,13 @@ onUnmounted(() => {
     width: min(720px, 94vw);
     background: var(--paper);
     border: clamp(26px, 6vw, 40px) solid transparent;
-    border-image: url('/freame-green.jpg?v=2') 66 round;
+    border-image: url('../../images/freame-green.jpg') 66 round;
     padding: clamp(1rem, 3vw, 1.8rem) clamp(0.3rem, 1.2vw, 0.7rem) clamp(1rem, 3vw, 1.6rem);
     box-shadow: var(--shadow-md);
 }
 /* عمود الصفحة: الجزء واسم السورة فوق الإطار ثم الصفحة */
-.page-column { display: flex; flex-direction: column; width: min(720px, 94vw); }
+/* عرض الصفحة يكبر مع حجم النص — خط QCF يعتمد على عرض الحاوية (cqw) فيتناسب تلقائياً */
+.page-column { display: flex; flex-direction: column; width: min(calc(720px * var(--quran-scale, 1)), 96vw); transition: width 0.18s ease; }
 .page-column .mushaf-page { width: 100%; }
 .page-topbar {
     display: flex; justify-content: space-between; align-items: flex-end; gap: 0.5rem;
@@ -638,7 +796,7 @@ onUnmounted(() => {
     /* محاذاة QCF الطبيعية: خط المصحف مصمّم ليملأ السطر بمسافاته الخاصة —
        توسيط ليكون الهامش يميناً ويساراً متساوياً تماماً */
     display: flex; justify-content: center; align-items: center; direction: rtl;
-    font-size: clamp(0.85rem, 6.0cqw, 2.4rem);
+    font-size: clamp(0.85rem, 6.0cqw, calc(2.4rem * var(--quran-scale, 1)));
     line-height: 2.0; color: var(--paper-ink); white-space: nowrap;
 }
 /* صفحات موسّطة (الفاتحة/بداية البقرة) */
@@ -656,14 +814,14 @@ onUnmounted(() => {
 .surah-name {
     display: inline-flex; align-items: center; justify-content: center;
     width: min(90%, 560px); aspect-ratio: 2107 / 245; margin: 0 auto;
-    background: url('/surah-banner.png') center / 100% 100% no-repeat;
+    background: url('../../images/surah-banner.png') center / 100% 100% no-repeat;
     font-family: 'Amiri Quran', 'Traditional Arabic', serif;
-    font-size: clamp(1.05rem, 4.2cqw, 1.7rem); font-weight: 700; color: var(--brand-700);
+    font-size: clamp(1.05rem, 4.2cqw, calc(1.7rem * var(--quran-scale, 1))); font-weight: 700; color: var(--brand-700);
     padding-bottom: 0.42em; line-height: 1;
 }
 /* مسافة أكبر تحت البسملة قبل أول آية */
 .basmalah { margin-bottom: 0.6rem; }
-.basmalah { font-family: 'Amiri Quran', serif; font-size: clamp(1.4rem, 7.6cqw, 2.5rem); line-height: 1; margin-top: 0.4rem; color: var(--paper-ink); white-space: nowrap; }
+.basmalah { font-family: 'Amiri Quran', serif; font-size: clamp(1.4rem, 7.6cqw, calc(2.5rem * var(--quran-scale, 1))); line-height: 1; margin-top: 0.4rem; color: var(--paper-ink); white-space: nowrap; }
 
 /* أزرار التنقّل الجانبية — دائرية شبحية عائمة */
 .nav {
@@ -739,6 +897,67 @@ onUnmounted(() => {
 
 .slide-enter-active, .slide-leave-active { transition: transform 0.28s cubic-bezier(0.4,0,0.2,1); }
 .slide-enter-from, .slide-leave-to { transform: translateX(-100%); }
+
+/* لوحة الترجمة على اليمين */
+.trans-panel {
+    position: fixed; top: 0; bottom: 0; right: 0; z-index: 60;
+    width: min(430px, 92vw);
+    display: flex; flex-direction: column;
+    background: var(--surface); border-left: 1px solid var(--border);
+    box-shadow: var(--shadow-lg);
+    font-family: 'Segoe UI', Tahoma, sans-serif;
+}
+/* على الشاشات الواسعة: تبدأ اللوحة تحت الشريط العلوي ليبقى ظاهراً (عرض جنباً إلى جنب) */
+@media (min-width: 900px) {
+    .trans-panel { top: 78px; z-index: 40; }
+}
+.tp-head {
+    display: flex; align-items: center; justify-content: space-between; gap: 0.5rem;
+    padding: 0.85rem 1rem; border-bottom: 1px solid var(--border);
+    background: var(--surface-2); color: var(--text);
+}
+.tp-title { font-size: 0.82rem; font-weight: 700; }
+.tp-close {
+    flex: none; width: 30px; height: 30px; border-radius: 50%;
+    border: 1px solid var(--border); background: var(--surface); color: var(--text-muted); cursor: pointer;
+}
+.tp-loading { padding: 2rem; text-align: center; color: var(--text-muted); }
+.tp-list { flex: 1; overflow-y: auto; padding: 0.4rem 0.5rem 6rem; }
+.tp-surah {
+    position: sticky; top: 0; z-index: 1;
+    background: var(--surface); color: var(--brand);
+    font-weight: 700; font-size: 0.88rem;
+    padding: 0.7rem 0.6rem 0.5rem; margin-bottom: 0.2rem;
+    border-bottom: 1px solid var(--border);
+}
+.tp-verse {
+    display: flex; align-items: flex-start; gap: 0.6rem;
+    padding: 0.7rem 0.6rem; border-radius: 10px; cursor: pointer;
+    transition: background 0.15s;
+}
+.tp-verse:hover { background: var(--surface-2); }
+.tp-verse.selected { background: var(--brand-soft); }
+.tp-verse.active { background: var(--brand-soft); box-shadow: inset 0 0 0 1.5px var(--brand-200); }
+.tp-num {
+    flex: none; min-width: 1.6rem; height: 1.6rem; margin-top: 0.1rem;
+    display: grid; place-items: center; border-radius: 50%;
+    background: var(--brand-soft); color: var(--brand);
+    font-size: 0.72rem; font-weight: 700;
+}
+.tp-text { margin: 0; line-height: 1.7; font-size: 0.95rem; color: var(--text); text-align: left; }
+
+.nav.hidden { display: none; }
+/* عرض جنبًا إلى جنب على الشاشات الواسعة: تُزاح الصفحة يسارًا لتظهر بجانب اللوحة */
+.tp-backdrop { display: none; }
+@media (min-width: 900px) {
+    .page-wrap.with-panel { padding-right: min(430px, 40vw); }
+}
+@media (max-width: 899px) {
+    .tp-backdrop {
+        display: block; position: fixed; inset: 0; z-index: 35;
+        background: rgba(10,20,15,0.42); backdrop-filter: blur(2px);
+    }
+}
 
 /* الجوال */
 @media (max-width: 640px) {
