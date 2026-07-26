@@ -5,8 +5,10 @@ namespace App\Http\Controllers;
 use App\Models\AudioFile;
 use App\Models\Ayah;
 use App\Models\Reciter;
+use App\Models\RiwayahAyah;
 use App\Models\Surah;
 use App\Models\Word;
+use App\Support\Riwayat;
 use App\Support\TranslationLanguages;
 use Illuminate\Http\JsonResponse;
 use Inertia\Inertia;
@@ -14,6 +16,47 @@ use Inertia\Response;
 
 class MushafController extends Controller
 {
+    /**
+     * صفحة رواية (غير حفص) بنصّ يونيكود بخط الرواية الرسمي — JSON لـ«وضع الرواية».
+     */
+    public function riwayah(int $page): JsonResponse
+    {
+        $slug = (string) request('r');
+        if (! Riwayat::isKnown($slug)) {
+            return response()->json(['error' => 'unknown riwayah'], 404);
+        }
+
+        $pages = (int) (RiwayahAyah::where('riwayah', $slug)->max('page') ?: 604);
+        $page = max(1, min($pages, $page));
+
+        $rows = RiwayahAyah::where('riwayah', $slug)
+            ->where('page', $page)
+            ->orderBy('id')
+            ->get(['sura_no', 'aya_no', 'sura_name_ar', 'aya_text', 'jozz']);
+
+        $verses = $rows->map(fn ($r) => [
+            'sura_no' => $r->sura_no,
+            'aya_no' => $r->aya_no,
+            'text' => $r->aya_text,
+            'is_start' => $r->aya_no === 1,
+            'sura_name' => $r->aya_no === 1 ? $r->sura_name_ar : null,
+            // بسملة قبل السورة (عدا الفاتحة والتوبة)
+            'bismillah' => $r->aya_no === 1 && $r->sura_no !== 1 && $r->sura_no !== 9,
+        ])->values();
+
+        return response()->json([
+            'slug' => $slug,
+            'name' => Riwayat::name($slug),
+            'font' => Riwayat::fontFamily($slug),
+            'page' => $page,
+            'pages' => $pages,
+            'prev' => $page > 1 ? $page - 1 : null,
+            'next' => $page < $pages ? $page + 1 : null,
+            'jozz' => $rows->first()->jozz ?? null,
+            'verses' => $verses,
+        ]);
+    }
+
     /**
      * ترجمات آيات الصفحة بترتيب القراءة (JSON للوحة الجانبية على اليمين).
      */
@@ -198,6 +241,7 @@ class MushafController extends Controller
             'reciterId' => $reciter?->id,
             'audio' => $audio,
             'translationLangs' => TranslationLanguages::available(),
+            'riwayat' => Riwayat::available(),
             'page' => $page,
             'prev' => $page > 1 ? $page - 1 : null,
             'next' => $page < 604 ? $page + 1 : null,

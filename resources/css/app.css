@@ -2,6 +2,43 @@
 
 @import 'tw-animate-css';
 
+/* خطوط الروايات الرسمية (KFGQPC — مجمع الملك فهد) لوضع الرواية */
+@font-face {
+    font-family: 'KFGQPC-Warsh';
+    src: url('/fonts/riwayat/warsh.woff2') format('woff2');
+    font-display: swap;
+}
+@font-face {
+    font-family: 'KFGQPC-Qaloon';
+    src: url('/fonts/riwayat/qaloon.woff2') format('woff2');
+    font-display: swap;
+}
+@font-face {
+    font-family: 'KFGQPC-Shouba';
+    src: url('/fonts/riwayat/shouba.woff2') format('woff2');
+    font-display: swap;
+}
+@font-face {
+    font-family: 'KFGQPC-Doori';
+    src: url('/fonts/riwayat/doori.woff2') format('woff2');
+    font-display: swap;
+}
+@font-face {
+    font-family: 'KFGQPC-Soosi';
+    src: url('/fonts/riwayat/soosi.woff2') format('woff2');
+    font-display: swap;
+}
+@font-face {
+    font-family: 'KFGQPC-Bazzi';
+    src: url('/fonts/riwayat/bazzi.woff2') format('woff2');
+    font-display: swap;
+}
+@font-face {
+    font-family: 'KFGQPC-Qumbul';
+    src: url('/fonts/riwayat/qumbul.woff2') format('woff2');
+    font-display: swap;
+}
+
 @source '../../vendor/laravel/framework/src/Illuminate/Pagination/resources/views/*.blade.php';
 @source '../../storage/framework/views/*.php';
 
@@ -174,69 +211,71 @@
 /* ===== نظام تصميم المصحف — Minimal (DGA #25935F) + وضع ليلي ===== */
 :root {
     /* الأخضر كلمسة (accent) */
-    --brand-50:  #eef7f2;
+    --brand-50: #eef7f2;
     --brand-100: #dcefe6;
     --brand-200: #b9dfcd;
     --brand-300: #86c9a9;
     --brand-400: #49a97f;
-    --brand:     #25935f;
+    --brand: #25935f;
     --brand-600: #1f7d51;
     --brand-700: #1a6644;
     --brand-800: #124b32;
     --brand-900: #0e3a27;
-    --brand-soft: rgba(37, 147, 95, 0.10);
-    --gold:      #c6a15a;
+    --brand-soft: rgba(37, 147, 95, 0.1);
+    --gold: #c6a15a;
 
     /* الأسطح والخلفيات — فاتح */
-    --canvas:      #f6f8f7;
-    --surface:     #ffffff;
-    --surface-2:   #f1f4f2;
-    --border:      #e7ecea;
+    --canvas: #f6f8f7;
+    --surface: #ffffff;
+    --surface-2: #f1f4f2;
+    --border: #e7ecea;
     --border-soft: #eef2f0;
-    --text:        #17211d;
-    --text-muted:  #667a71;
+    --text: #17211d;
+    --text-muted: #667a71;
 
     /* ورق المصحف */
-    --paper:     #fdfbf4;
+    --paper: #fdfbf4;
     --paper-ink: #1b1b1b;
 
     /* أشرطة زجاجية شفافة */
-    --glass:     rgba(255, 255, 255, 0.72);
+    --glass: rgba(255, 255, 255, 0.72);
     --glass-brd: rgba(20, 40, 30, 0.08);
 
     /* ظلال ناعمة */
-    --shadow-sm: 0 1px 2px rgba(16, 40, 30, 0.04), 0 2px 8px rgba(16, 40, 30, 0.05);
-    --shadow-md: 0 2px 6px rgba(16, 40, 30, 0.05), 0 12px 32px rgba(16, 40, 30, 0.08);
+    --shadow-sm:
+        0 1px 2px rgba(16, 40, 30, 0.04), 0 2px 8px rgba(16, 40, 30, 0.05);
+    --shadow-md:
+        0 2px 6px rgba(16, 40, 30, 0.05), 0 12px 32px rgba(16, 40, 30, 0.08);
     --shadow-lg: 0 8px 40px rgba(16, 40, 30, 0.14);
     --radius: 18px;
 }
 
 .dark {
-    --brand-50:  #10241b;
+    --brand-50: #10241b;
     --brand-100: #14301f;
     --brand-200: #1c4832;
     --brand-300: #2b6b4a;
     --brand-400: #35a06f;
-    --brand:     #34b277;
+    --brand: #34b277;
     --brand-600: #2ea06a;
     --brand-700: #7fd3aa;
     --brand-800: #a9e2c6;
     --brand-900: #cdeddc;
     --brand-soft: rgba(52, 178, 119, 0.14);
-    --gold:      #d4b878;
+    --gold: #d4b878;
 
-    --canvas:      #0d1210;
-    --surface:     #151b18;
-    --surface-2:   #1b2320;
-    --border:      #26302b;
+    --canvas: #0d1210;
+    --surface: #151b18;
+    --surface-2: #1b2320;
+    --border: #26302b;
     --border-soft: #202a26;
-    --text:        #e9efeb;
-    --text-muted:  #93a29b;
+    --text: #e9efeb;
+    --text-muted: #93a29b;
 
-    --paper:     #14100c;
+    --paper: #14100c;
     --paper-ink: #ece7dc;
 
-    --glass:     rgba(21, 27, 24, 0.72);
+    --glass: rgba(21, 27, 24, 0.72);
     --glass-brd: rgba(255, 255, 255, 0.06);
 
     --shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.3);

@@ -2,6 +2,7 @@
 import { Head, Link, router } from '@inertiajs/vue3';
 import { computed, onMounted, ref } from 'vue';
 import AppNav from '@/components/AppNav.vue';
+import AppFooter from '@/components/AppFooter.vue';
 import Icon from '@/components/Icon.vue';
 
 interface ReciterT {
@@ -14,16 +15,25 @@ interface LangT {
     name: string;
     dir: string;
 }
+interface RiwT {
+    slug: string;
+    name: string;
+    is_hafs: boolean;
+    font: string;
+    pages: number;
+}
 
 const props = defineProps<{
     stats: { surahs: number; ayahs: number; pages: number };
     reciters: ReciterT[];
     translationLangs: LangT[];
+    riwayat: RiwT[];
 }>();
 
 const lastPage = ref<number | null>(null);
 const reciterId = ref<number | null>(null);
 const lang = ref<string>('none');
+const riwayah = ref<string>('hafs');
 
 onMounted(() => {
     const p = Number(localStorage.getItem('quran-last-page'));
@@ -41,6 +51,11 @@ onMounted(() => {
     lang.value = props.translationLangs.some((l) => l.code === savedLang)
         ? savedLang
         : 'none';
+
+    const savedRiw = localStorage.getItem('quran-riwayah') || 'hafs';
+    riwayah.value = props.riwayat.some((r) => r.slug === savedRiw)
+        ? savedRiw
+        : 'hafs';
 });
 
 function persist() {
@@ -48,6 +63,7 @@ function persist() {
         if (reciterId.value)
             localStorage.setItem('quran-last-reciter', String(reciterId.value));
         localStorage.setItem('quran-trans-lang', lang.value);
+        localStorage.setItem('quran-riwayah', riwayah.value);
     } catch {
         /* */
     }
@@ -81,8 +97,25 @@ const resumeLabel = computed(() =>
                 القرآن الكريم بالرسم العثماني — مصحف المدينة النبوية
             </p>
 
-            <!-- اختيار ما قبل القراءة: القارئ + لغة الترجمة -->
+            <!-- اختيار ما قبل القراءة: الرواية + القارئ + لغة الترجمة -->
             <div class="chooser">
+                <label v-if="riwayat.length > 1" class="ch-field ch-full">
+                    <span class="ch-label"
+                        ><Icon name="book-open" :size="16" /> الرواية</span
+                    >
+                    <div class="ch-select">
+                        <select v-model="riwayah" @change="persist">
+                            <option
+                                v-for="r in riwayat"
+                                :key="r.slug"
+                                :value="r.slug"
+                            >
+                                {{ r.name }}
+                            </option>
+                        </select>
+                        <Icon name="chevron-down" :size="16" class="ch-caret" />
+                    </div>
+                </label>
                 <div class="ch-row">
                     <label class="ch-field">
                         <span class="ch-label"
@@ -218,17 +251,49 @@ const resumeLabel = computed(() =>
                     أربعة تفاسير رسمية وترجمات المعاني بأكثر من لغة بلمسة واحدة.
                 </p>
             </article>
+            <article>
+                <div class="ico">
+                    <Icon name="layers" :size="23" :stroke="1.8" />
+                </div>
+                <h3>تعدد الروايات</h3>
+                <p>
+                    قراءة المصحف بعدّة روايات — ورش وقالون وشعبة وغيرها — بخطوط
+                    KFGQPC الرسمية، لكل رواية ترقيم صفحاتها.
+                </p>
+            </article>
+            <article>
+                <div class="ico">
+                    <Icon name="droplet" :size="23" :stroke="1.8" />
+                </div>
+                <h3>تلوين التجويد</h3>
+                <p>
+                    إظهار أحكام التجويد بالألوان المعتمدة مع مفتاح يوضّح كل حكم
+                    لتيسير القراءة الصحيحة.
+                </p>
+            </article>
+            <article>
+                <div class="ico">
+                    <Icon name="book-open" :size="23" :stroke="1.8" />
+                </div>
+                <h3>معاني الكلمات</h3>
+                <p>
+                    شرح مختصر لمعاني المفردات الغريبة عند كل آية لفهم المعنى
+                    مباشرةً أثناء التلاوة.
+                </p>
+            </article>
+            <article>
+                <div class="ico">
+                    <Icon name="repeat" :size="23" :stroke="1.8" />
+                </div>
+                <h3>المتشابهات اللفظية</h3>
+                <p>
+                    إبراز المواضع المتشابهة التي يلتبس فيها الحفظ مع الانتقال
+                    السريع بينها — عوناً للحُفّاظ.
+                </p>
+            </article>
         </section>
 
-        <footer class="foot">
-            <p>تطوير عمادة تقنية المعلومات . جميع الحقوق محفوظة لجامعة القصيم</p>
-            <p class="foot-src">
-                المصادر: النص العثماني والتفسير والترجمة وغريب القرآن من مجمع
-                الملك فهد لطباعة المصحف الشريف (عبر QuranEnc.com) · رموز خط QCF
-                وتوقيت التلاوة وتلوين التجويد من Quran.com / Tarteel (QUL) ·
-                المتشابهات اللفظية من مشروع Quran Mutashabihat (Waqar144).
-            </p>
-        </footer>
+        <AppFooter />
     </div>
 </template>
 
@@ -312,6 +377,9 @@ const resumeLabel = computed(() =>
     grid-template-columns: 1fr 1fr;
     gap: 0.7rem;
     margin-bottom: 0.9rem;
+}
+.ch-full {
+    margin-bottom: 0.7rem;
 }
 .ch-field {
     display: flex;
@@ -487,6 +555,17 @@ const resumeLabel = computed(() =>
     font-size: 0.72rem;
     line-height: 1.7;
     opacity: 0.85;
+}
+.foot-link {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.3rem;
+    color: var(--brand);
+    font-weight: 600;
+    text-decoration: none;
+}
+.foot-link:hover {
+    text-decoration: underline;
 }
 
 @media (max-width: 560px) {

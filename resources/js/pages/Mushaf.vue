@@ -52,6 +52,13 @@ interface LangT {
     name: string;
     dir: string;
 }
+interface RiwT {
+    slug: string;
+    name: string;
+    is_hafs: boolean;
+    font: string;
+    pages: number;
+}
 
 const props = defineProps<{
     page: number;
@@ -65,6 +72,7 @@ const props = defineProps<{
     reciterId: number | null;
     audio: AudioT[];
     translationLangs: LangT[];
+    riwayat: RiwT[];
 }>();
 
 const pageFont = `p${props.page}`;
@@ -586,6 +594,114 @@ const settingsOpen = ref(false);
 function onLangSelect(e: Event) {
     setLang((e.target as HTMLSelectElement).value);
 }
+
+/* ---------- دليل علامات الوقف والابتداء (مصحف المدينة) ---------- */
+const waqfGuideOpen = ref(false);
+const WAQF_SIGNS: { sign: string; name: string; desc: string }[] = [
+    {
+        sign: 'مـ',
+        name: 'الوقف اللازم',
+        desc: 'يجب الوقف، لأنّ وصله قد يُوهم معنًى غير مُراد.',
+    },
+    {
+        sign: 'لا',
+        name: 'الوقف الممنوع',
+        desc: 'لا يُوقف عليه؛ فإن اضطُررت للوقف فارجع وابدأ بما قبله.',
+    },
+    {
+        sign: 'ج',
+        name: 'الوقف الجائز',
+        desc: 'يجوز الوقف والوصل بدرجةٍ متساوية.',
+    },
+    {
+        sign: 'صلى',
+        name: 'الوصل أَولى',
+        desc: 'يجوز الوقف، والوصل (الاستمرار في القراءة) أَولى.',
+    },
+    { sign: 'قلى', name: 'الوقف أَولى', desc: 'يجوز الوصل، والوقف أَولى.' },
+    {
+        sign: '∴ … ∴',
+        name: 'تعانُق الوقف',
+        desc: 'موضعان متلازمان: إذا وقفت على أحدهما فلا تقف على الآخر.',
+    },
+    {
+        sign: 'س',
+        name: 'السكتة',
+        desc: 'وقفةٌ يسيرة بلا تنفّس، ثم تُتابَع القراءة.',
+    },
+];
+
+/* ---------- وضع الرواية (غير حفص) — نصّ يونيكود بخط KFGQPC الرسمي ---------- */
+interface RiwVerse {
+    sura_no: number;
+    aya_no: number;
+    text: string;
+    is_start: boolean;
+    sura_name: string | null;
+    bismillah: boolean;
+}
+interface RiwData {
+    name: string;
+    font: string;
+    page: number;
+    pages: number;
+    prev: number | null;
+    next: number | null;
+    jozz: number | null;
+    verses: RiwVerse[];
+}
+const riwayah = ref('hafs');
+const isRiwayah = computed(() => riwayah.value !== 'hafs');
+const riwData = ref<RiwData | null>(null);
+const riwLoading = ref(false);
+const riwPage = ref(1);
+
+async function loadRiwayah(page: number) {
+    if (!isRiwayah.value) return;
+    riwLoading.value = true;
+    try {
+        const res = await fetch(
+            `/api/mushaf/${page}/riwayah?r=${riwayah.value}`,
+            {
+                headers: { Accept: 'application/json' },
+            },
+        );
+        const d = await res.json();
+        riwData.value = d;
+        riwPage.value = d.page;
+    } finally {
+        riwLoading.value = false;
+    }
+}
+function setRiwayah(slug: string) {
+    riwayah.value = slug;
+    try {
+        localStorage.setItem('quran-riwayah', slug);
+    } catch {
+        /* */
+    }
+    if (slug === 'hafs') {
+        riwData.value = null;
+        return;
+    }
+    stop(); // الصوت والمزايا التفاعلية خاصة بحفص
+    exitCycle();
+    stopFlash();
+    manualHide.value = false;
+    loadRiwayah(riwPage.value || 1);
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+}
+function onRiwSelect(e: Event) {
+    setRiwayah((e.target as HTMLSelectElement).value);
+}
+function riwGo(target: number | null) {
+    if (!target) return;
+    loadRiwayah(target);
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+}
+function juzArabicOrdinal(n: number | null): string {
+    return n ? juzLabel(n) : '';
+}
 // إعادة تحميل الترجمة عند تغيّر الصفحة (Inertia يعيد استخدام نفس المكوّن)
 watch(
     () => props.page,
@@ -642,6 +758,15 @@ function go(target: number | null) {
             `/mushaf/${target}${props.reciterId ? `?reciter=${props.reciterId}` : ''}`,
         );
 }
+// تنقّل موحّد يراعي وضع الرواية (لكل رواية ترقيم صفحاتها)
+function navPrev() {
+    if (isRiwayah.value) riwGo(riwData.value?.prev ?? null);
+    else go(props.prev);
+}
+function navNext() {
+    if (isRiwayah.value) riwGo(riwData.value?.next ?? null);
+    else go(props.next);
+}
 function changeReciter(e: Event) {
     const id = (e.target as HTMLSelectElement).value;
     stop();
@@ -663,14 +788,14 @@ function onTouchEnd(e: TouchEvent) {
     // تمرير أفقي واضح فقط (لا يتعارض مع التمرير العمودي أو الضغط على كلمة)
     if (Math.abs(dx) < 55 || Math.abs(dx) < Math.abs(dy) * 1.4) return;
     if (dx > 0)
-        go(props.next); // سحب لليمين → الصفحة التالية
-    else go(props.prev); // سحب لليسار → الصفحة السابقة
+        navNext(); // سحب لليمين → الصفحة التالية
+    else navPrev(); // سحب لليسار → الصفحة السابقة
 }
 function onKey(e: KeyboardEvent) {
     if ((e.target as HTMLElement)?.tagName === 'INPUT') return;
-    if (e.key === 'ArrowRight') go(props.prev);
-    if (e.key === 'ArrowLeft') go(props.next);
-    if (e.key === ' ') {
+    if (e.key === 'ArrowRight') navPrev();
+    if (e.key === 'ArrowLeft') navNext();
+    if (e.key === ' ' && !isRiwayah.value) {
         e.preventDefault();
         toggle();
     }
@@ -1299,6 +1424,16 @@ onMounted(() => {
     } catch {
         /* */
     }
+    // استعادة الرواية المختارة (وضع الرواية)
+    try {
+        const rw = localStorage.getItem('quran-riwayah');
+        if (rw && rw !== 'hafs' && props.riwayat.some((r) => r.slug === rw)) {
+            riwayah.value = rw;
+            loadRiwayah(1);
+        }
+    } catch {
+        /* */
+    }
     // استعادة وضع التجويد + تلوين تجويد الآية
     try {
         if (localStorage.getItem('quran-tajweed-mode') === '1') {
@@ -1391,6 +1526,7 @@ onUnmounted(() => {
         <!-- شريط أدوات مبسّط: نمط المُعلّم + الإعدادات -->
         <header class="topbar">
             <button
+                v-if="!isRiwayah"
                 class="tb-btn teacher-btn"
                 :class="{ on: teacherMode }"
                 @click="toggleTeacher"
@@ -1401,6 +1537,7 @@ onUnmounted(() => {
             </button>
 
             <button
+                v-if="!isRiwayah"
                 class="tb-btn tajweed-btn"
                 :class="{ on: tajweedMode }"
                 @click="toggleTajweedMode"
@@ -1410,6 +1547,11 @@ onUnmounted(() => {
                 <span class="tb-label">التجويد</span>
                 <Icon v-if="tajweedMode" name="check" :size="14" />
             </button>
+
+            <span v-if="isRiwayah" class="riw-badge">
+                <Icon name="book-open" :size="16" /> رواية
+                {{ riwData?.name || '' }}
+            </span>
 
             <div class="settings-wrap">
                 <button
@@ -1423,7 +1565,29 @@ onUnmounted(() => {
                 </button>
                 <transition name="pop">
                     <div v-if="settingsOpen" class="settings-pop" dir="rtl">
-                        <div class="sp-field">
+                        <div v-if="riwayat.length > 1" class="sp-field">
+                            <span class="sp-label"
+                                ><Icon name="book-open" :size="15" />
+                                الرواية</span
+                            >
+                            <div class="sp-select">
+                                <select :value="riwayah" @change="onRiwSelect">
+                                    <option
+                                        v-for="r in riwayat"
+                                        :key="r.slug"
+                                        :value="r.slug"
+                                    >
+                                        {{ r.name }}
+                                    </option>
+                                </select>
+                                <Icon
+                                    name="chevron-down"
+                                    :size="15"
+                                    class="sp-caret"
+                                />
+                            </div>
+                        </div>
+                        <div v-if="!isRiwayah" class="sp-field">
                             <span class="sp-label"
                                 ><Icon name="mic" :size="15" /> القارئ</span
                             >
@@ -1447,7 +1611,7 @@ onUnmounted(() => {
                                 />
                             </div>
                         </div>
-                        <div class="sp-field">
+                        <div v-if="!isRiwayah" class="sp-field">
                             <span class="sp-label"
                                 ><Icon name="languages" :size="15" />
                                 الترجمة</span
@@ -1497,6 +1661,17 @@ onUnmounted(() => {
                                 </button>
                             </div>
                         </div>
+
+                        <button
+                            class="sp-guide-btn"
+                            @click="
+                                waqfGuideOpen = true;
+                                settingsOpen = false;
+                            "
+                        >
+                            <Icon name="book-open" :size="15" /> دليل علامات
+                            الوقف والابتداء
+                        </button>
                     </div>
                 </transition>
                 <div
@@ -1524,14 +1699,59 @@ onUnmounted(() => {
             <button
                 class="nav next"
                 :class="{ hidden: transLang !== 'none' }"
-                :disabled="!next"
-                @click="go(next)"
+                :disabled="isRiwayah ? !riwData?.next : !next"
+                @click="navNext"
                 aria-label="التالية"
             >
                 <Icon name="chevron-left" :size="24" />
             </button>
 
-            <div class="page-column" :style="{ '--quran-scale': fontScale }">
+            <!-- وضع الرواية (غير حفص) -->
+            <div
+                v-if="isRiwayah"
+                class="page-column riwayah-column"
+                :style="{ '--quran-scale': fontScale }"
+            >
+                <div class="page-topbar">
+                    <span class="pt-juz" v-if="riwData?.jozz">{{
+                        juzLabel(riwData.jozz)
+                    }}</span>
+                    <span class="pt-surah">{{ riwData?.name }}</span>
+                </div>
+                <div
+                    class="mushaf-page riwayah-page"
+                    :style="{ fontFamily: riwData?.font }"
+                >
+                    <div v-if="riwLoading" class="riw-loading">…</div>
+                    <template v-else>
+                        <template
+                            v-for="(v, i) in riwData?.verses ?? []"
+                            :key="i"
+                        >
+                            <div v-if="v.is_start" class="surah-banner">
+                                <div class="surah-name">
+                                    سورة {{ v.sura_name }}
+                                </div>
+                                <div v-if="v.bismillah" class="basmalah">﷽</div>
+                            </div>
+                            <span class="riw-aya">{{ v.text }} </span>
+                        </template>
+                    </template>
+                </div>
+                <div class="page-badge">{{ pageArabic(riwPage) }}</div>
+                <p class="riw-note">
+                    <Icon name="book-open" :size="13" /> رواية
+                    {{ riwData?.name }} — نصّ وخط رسميّان من مجمع الملك فهد
+                    (KFGQPC). المزايا التفاعلية (الصوت، التفسير، نمط المُعلّم)
+                    متاحة في رواية حفص.
+                </p>
+            </div>
+
+            <div
+                v-else
+                class="page-column"
+                :style="{ '--quran-scale': fontScale }"
+            >
                 <!-- الجزء (يمين) واسم السورة (يسار) فوق الإطار -->
                 <div class="page-topbar">
                     <span class="pt-juz" v-if="juz">{{ juzLabel(juz) }}</span>
@@ -1664,8 +1884,8 @@ onUnmounted(() => {
             <button
                 class="nav prev"
                 :class="{ hidden: transLang !== 'none' }"
-                :disabled="!prev"
-                @click="go(prev)"
+                :disabled="isRiwayah ? !riwData?.prev : !prev"
+                @click="navPrev"
                 aria-label="السابقة"
             >
                 <Icon name="chevron-right" :size="24" />
@@ -2101,8 +2321,8 @@ onUnmounted(() => {
             </div>
         </section>
 
-        <!-- مشغّل الصوت — رصيف عائم -->
-        <footer class="player">
+        <!-- مشغّل الصوت — رصيف عائم (رواية حفص فقط) -->
+        <footer v-if="!isRiwayah" class="player">
             <div class="dock">
                 <button
                     class="ico"
@@ -2372,10 +2592,57 @@ onUnmounted(() => {
             </aside>
         </transition>
         <div v-if="drawerOpen" class="backdrop" @click="closeDrawer"></div>
+
+        <!-- دليل علامات الوقف والابتداء (من مصحف المدينة — مجمع الملك فهد) -->
+        <transition name="slide">
+            <aside v-if="waqfGuideOpen" class="drawer waqf-guide" dir="rtl">
+                <button class="close" @click="waqfGuideOpen = false">
+                    <Icon name="x" :size="18" />
+                </button>
+                <div class="vcontent">
+                    <h3 class="waqf-title">
+                        <Icon name="book-open" :size="18" /> علامات الوقف
+                        والابتداء
+                    </h3>
+                    <p class="waqf-intro">
+                        العلامات التي تُرشد القارئ إلى مواضع الوقف والوصل في
+                        مصحف المدينة (رواية حفص).
+                    </p>
+                    <ul class="waqf-list">
+                        <li
+                            v-for="w in WAQF_SIGNS"
+                            :key="w.name"
+                            class="waqf-item"
+                        >
+                            <span class="waqf-sign">{{ w.sign }}</span>
+                            <div class="waqf-body">
+                                <span class="waqf-name">{{ w.name }}</span>
+                                <span class="waqf-desc">{{ w.desc }}</span>
+                            </div>
+                        </li>
+                    </ul>
+                    <em class="src"
+                        >— وفق اصطلاح مصحف المدينة، مجمع الملك فهد لطباعة المصحف
+                        الشريف</em
+                    >
+                </div>
+            </aside>
+        </transition>
+        <div
+            v-if="waqfGuideOpen"
+            class="backdrop"
+            @click="waqfGuideOpen = false"
+        ></div>
     </div>
 </template>
 
 <style scoped>
+/* خط مصحف المدينة الرسمي (KFGQPC Uthmanic Hafs) — للرسم العثماني في عرض التجويد */
+@font-face {
+    font-family: 'Uthmanic Hafs';
+    src: url('/fonts/hafs/UthmanicHafs.woff2') format('woff2');
+    font-display: swap;
+}
 .mushaf-screen {
     min-height: 100vh;
     background: var(--canvas);
@@ -2537,6 +2804,84 @@ onUnmounted(() => {
     min-width: 3ch;
     text-align: center;
 }
+/* زرّ دليل علامات الوقف داخل قائمة الإعدادات */
+.sp-guide-btn {
+    display: flex;
+    align-items: center;
+    gap: 0.4rem;
+    width: 100%;
+    margin-top: 0.2rem;
+    padding: 0.6rem 0.8rem;
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    background: var(--surface-2);
+    color: var(--text);
+    font-family: inherit;
+    font-size: 0.85rem;
+    font-weight: 600;
+    cursor: pointer;
+}
+.sp-guide-btn:hover {
+    border-color: var(--brand);
+    color: var(--brand);
+}
+/* نافذة دليل علامات الوقف */
+.waqf-title {
+    display: flex;
+    align-items: center;
+    gap: 0.45rem;
+    margin: 0 0 0.3rem;
+    font-size: 1.15rem;
+    color: var(--text);
+}
+.waqf-intro {
+    margin: 0 0 1rem;
+    color: var(--text-muted);
+    font-size: 0.85rem;
+    line-height: 1.8;
+}
+.waqf-list {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 0.6rem;
+}
+.waqf-item {
+    display: flex;
+    align-items: flex-start;
+    gap: 0.9rem;
+    padding: 0.75rem 0.85rem;
+    border: 1px solid var(--border);
+    border-inline-start: 3px solid var(--brand);
+    border-radius: 12px;
+    background: var(--surface-2);
+}
+.waqf-sign {
+    flex-shrink: 0;
+    min-width: 2.6rem;
+    text-align: center;
+    font-family: 'Uthmanic Hafs', 'Amiri Quran', serif;
+    font-size: 1.5rem;
+    line-height: 1.4;
+    color: var(--brand);
+}
+.waqf-body {
+    display: flex;
+    flex-direction: column;
+    gap: 0.15rem;
+}
+.waqf-name {
+    font-weight: 700;
+    color: var(--text);
+    font-size: 0.95rem;
+}
+.waqf-desc {
+    color: var(--text-muted);
+    font-size: 0.83rem;
+    line-height: 1.75;
+}
 .pop-enter-active,
 .pop-leave-active {
     transition:
@@ -2631,6 +2976,8 @@ onUnmounted(() => {
     justify-content: center;
     align-items: center;
     direction: rtl;
+    /* خط QCF مصمّم ليملأ عرض الحاوية تماماً عند 6cqw — فلا يُضرب في معامل التكبير
+       (وإلا تجاوز السطر عرض الإطار). التكبير يكبّر الإطار نفسه فيكبر النص تبعاً للحاوية. */
     font-size: clamp(0.85rem, 6cqw, calc(2.4rem * var(--quran-scale, 1)));
     line-height: 2;
     color: var(--paper-ink);
@@ -3086,7 +3433,7 @@ onUnmounted(() => {
     gap: 0.5rem;
 }
 .vtext.tajweed-colored {
-    font-family: 'Amiri Quran', serif;
+    font-family: 'Uthmanic Hafs', 'Amiri Quran', serif;
     font-size: 1.7rem;
     line-height: 2.4;
     padding: 1rem 1.2rem;
@@ -3142,6 +3489,56 @@ onUnmounted(() => {
 }
 
 /* ============ وضع «القراءة بالتجويد» للصفحة ============ */
+/* وضع الرواية — نصّ يونيكود بخط KFGQPC الرسمي */
+.riwayah-page {
+    padding: 1.5rem 1.2rem;
+    direction: rtl;
+    text-align: justify;
+    text-align-last: center;
+}
+.riw-loading {
+    text-align: center;
+    color: var(--text-muted);
+    padding: 3rem 1rem;
+}
+.riw-aya {
+    font-size: calc(1.7rem * var(--quran-scale, 1));
+    line-height: 2.75;
+    color: var(--paper-ink);
+}
+.riw-note {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.4rem;
+    margin: 1rem 0 0;
+    font-size: 0.74rem;
+    line-height: 1.6;
+    color: var(--text-muted);
+    text-align: center;
+    font-family: 'Segoe UI', Tahoma, sans-serif;
+}
+.riw-note :deep(.lc-icon) {
+    color: var(--brand);
+    flex: none;
+}
+.riw-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.4rem;
+    font-size: 0.85rem;
+    font-weight: 700;
+    color: var(--brand-700);
+    background: var(--brand-soft);
+    border: 1px solid var(--brand-200);
+    border-radius: 999px;
+    padding: 0.5rem 0.95rem;
+    font-family: 'Segoe UI', Tahoma, sans-serif;
+}
+.riw-badge :deep(.lc-icon) {
+    color: var(--brand);
+}
+
 .tajweed-page {
     padding: 1.4rem 1.2rem;
 }
@@ -3151,9 +3548,9 @@ onUnmounted(() => {
     padding: 3rem 1rem;
 }
 .tajweed-flow {
-    font-family: 'Amiri Quran', serif;
+    font-family: 'Uthmanic Hafs', 'Amiri Quran', serif;
     font-size: calc(1.75rem * var(--quran-scale, 1));
-    line-height: 2.7;
+    line-height: 2.9;
     text-align: justify;
     text-align-last: center;
     direction: rtl;
@@ -3177,7 +3574,7 @@ onUnmounted(() => {
 }
 .tj-surah-name {
     display: block;
-    font-family: 'Amiri Quran', serif;
+    font-family: 'Uthmanic Hafs', 'Amiri Quran', serif;
     font-size: 1.5rem;
     font-weight: 700;
     color: #6b4e12;
@@ -3186,7 +3583,7 @@ onUnmounted(() => {
 }
 .tj-basmalah {
     display: block;
-    font-family: 'Amiri Quran', serif;
+    font-family: 'Uthmanic Hafs', 'Amiri Quran', serif;
     font-size: 1.9rem;
     color: #1a1a1a;
     margin-top: 0.4rem;
@@ -3269,7 +3666,7 @@ onUnmounted(() => {
 }
 .sim-text {
     margin: 0;
-    font-family: 'Amiri Quran', serif;
+    font-family: 'Uthmanic Hafs', 'Amiri Quran', serif;
     font-size: 1.15rem;
     line-height: 1.9;
     color: var(--paper-ink);

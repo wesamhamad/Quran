@@ -29,6 +29,7 @@ php artisan quran:import-trans-quranenc --key=english_saheeh --lang=english --na
 php artisan quran:import-trans-quranenc --key=french_rashid  --lang=french  --name="Rachid Maach"          # ترجمة فرنسية
 php artisan quran:import-tajweed                                            # النص المُعلَّم بالتجويد (من Quran.com — QPC Hafs)
 php artisan quran:import-mutashabihat                                       # المتشابهات اللفظية (من مشروع Waqar144)
+php artisan quran:import-riwayat                                            # الروايات (ورش، قالون…) نصوصاً وخطوطاً من KFGQPC
 php artisan quran:fonts                                                     # تحميل 604 خط QCF (مضمَّنة في المستودع مسبقاً)
 php artisan quran:audio-segments 7                                          # توقيت الكلمات (العفاسي)
 # قرّاء إضافيون (اختياري):
@@ -62,6 +63,7 @@ composer run dev   # أو: php artisan serve + npm run dev
 - **التلاوات الصوتية**: everyayah.com، وتوقيت الكلمات عبر Quran.Foundation.
 - **تلوين التجويد**: النص العثماني المُعلَّم بقواعد التجويد (`text_uthmani_tajweed`) عبر [Quran.com](https://quran.com) / Tarteel (QUL) — مشتق من رسم QPC Hafs (مصحف المدينة) — `quran:import-tajweed`.
 - **المتشابهات اللفظية**: مشروع [Quran Mutashabihat Data](https://github.com/Waqar144/Quran_Mutashabihat_Data) (مبني على عمل القارئ إدريس العاصم رحمه الله) — `quran:import-mutashabihat`.
+- **الروايات (غير حفص)**: نصوص وخطوط KFGQPC الرسمية (ورش، قالون، شعبة، الدوري، السوسي، البزّي، قنبل) — مجمع الملك فهد، عبر مرآة [quran-data-kfgqpc](https://github.com/thetruetruth/quran-data-kfgqpc) — `quran:import-riwayat`. تُعرض بـ«وضع الرواية» بخطوط الرواية الرسمية صفحةً بصفحة (حفص يبقى بنظام QCF).
 
 > **الترخيص/الإسناد**: مصادر QuranEnc تشترط ذكر الناشر والمصدر (QuranEnc.com) عند إعادة النشر. تحميلات sqlite الرسمية تُحفظ في `storage/app/quranenc/` (خارج المستودع) عند استخدام `--offline`.
 

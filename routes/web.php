@@ -16,6 +16,9 @@ Route::inertia('dashboard', 'Dashboard')->name('dashboard');
 // فهرس السور
 Route::get('/surahs', [SurahIndexController::class, 'index'])->name('surahs');
 
+// المصادر والإسناد (صفحة ثابتة)
+Route::inertia('sources', 'Sources')->name('sources');
+
 // المصحف — عرض الصفحة بخط QCF (مصحف المدينة)
 Route::get('/mushaf/{page?}', [MushafController::class, 'page'])
     ->where('page', '[0-9]+')
@@ -30,6 +33,11 @@ Route::get('/api/mushaf/{page}/translations', [MushafController::class, 'transla
 Route::get('/api/mushaf/{page}/tajweed', [MushafController::class, 'tajweed'])
     ->where('page', '[0-9]+')
     ->name('mushaf.tajweed');
+
+// صفحة رواية (غير حفص) بنصّ يونيكود بخط الرواية — JSON لوضع «الرواية»
+Route::get('/api/mushaf/{page}/riwayah', [MushafController::class, 'riwayah'])
+    ->where('page', '[0-9]+')
+    ->name('mushaf.riwayah');
 
 // البحث في النص العثماني
 Route::get('/search', [SearchController::class, 'index'])->name('search');

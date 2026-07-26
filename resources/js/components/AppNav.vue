@@ -27,6 +27,7 @@ function toggleTheme() {
                 <Link href="/mushaf/1" :class="{ on: active === 'mushaf' }">المصحف</Link>
                 <Link href="/khatmah" :class="{ on: active === 'khatmah' }">ختمة</Link>
                 <Link href="/search" :class="{ on: active === 'search' }">بحث</Link>
+                <Link href="/sources" :class="{ on: active === 'sources' }">المصادر</Link>
             </div>
             <button class="theme" @click="toggleTheme" aria-label="تبديل الوضع الليلي">
                 <!-- شمس (للتبديل إلى النهاري) -->

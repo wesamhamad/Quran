@@ -30,6 +30,28 @@ class TranslationLanguages
         ['pt', 'portuguese_nasr',     'Portuguese — Helmy Nasr'],
         ['ha', 'hausa_gummi',         'Hausa — Abubakar Gumi'],
         ['sw', 'swahili_rwwad',       'Swahili — Rowwad'],
+
+        // شرق/جنوب شرق آسيا
+        ['ja',  'japanese_saeedsato', 'Japanese — Saeed Sato'],
+        ['vi',  'vietnamese_rwwad',   'Vietnamese — Rowwad'],
+        ['th',  'thai_rwwad',         'Thai — Rowwad'],
+        ['km',  'khmer_rwwad',        'Khmer — Rowwad'],
+        ['tl',  'tagalog_rwwad',      'Filipino (Tagalog) — Rowwad'],
+        ['ug',  'uyghur_saleh',       'Uyghur — Muhammad Saleh'],
+
+        // أفريقيا جنوب الصحراء
+        ['so',  'somali_yacob',       'Somali — Abdullah Yaqoub'],
+        ['am',  'amharic_sadiq',      'Amharic — Muhammad Sadiq'],
+        ['yo',  'yoruba_mikail',      'Yoruba — Abu Rahimah Mikael'],
+        ['om',  'oromo_ababor',       'Oromo — Gali Ababor'],
+        ['aa',  'afar_hamza',         'Afar — Mahmoud Hamza'],
+        ['nqo', 'ankobambara_dayyan', "N'Ko — Baba Mamadi Diane"],
+        ['rw',  'kinyarwanda_assoc',  'Kinyarwanda — Rwanda Muslim Assoc.'],
+        ['rn',  'ikirundi_gehiti',    'Kirundi — Yusuf Gahiti'],
+        ['mos', 'moore_rwwad',        'Mooré — Rowwad'],
+        ['ak',  'asante_harun',       'Akan (Asante) — Harun Ismail'],
+        ['ff',  'fulani_rwwad',       'Fulani — Rowwad'],
+        ['ln',  'lingala_zakaria',    'Lingala — Mohammed Balangogo'],
     ];
 
     /** بيانات العرض لكل لغة: code => [native name, dir]. */
@@ -68,9 +90,23 @@ class TranslationLanguages
         'si' => ['සිංහල', 'ltr'],
         'so' => ['Soomaali', 'ltr'],
         'yo' => ['Yorùbá', 'ltr'],
+        // شرق/جنوب شرق آسيا
+        'km' => ['ភាសាខ្មែរ', 'ltr'],
+        'tl' => ['Tagalog', 'ltr'],
+        // أفريقيا جنوب الصحراء
+        'am' => ['አማርኛ', 'ltr'],
+        'om' => ['Afaan Oromoo', 'ltr'],
+        'aa' => ['Qafár af', 'ltr'],
+        'nqo' => ['ߒߞߏ', 'rtl'],
+        'rw' => ['Kinyarwanda', 'ltr'],
+        'rn' => ['Ikirundi', 'ltr'],
+        'mos' => ['Mooré', 'ltr'],
+        'ak' => ['Akan', 'ltr'],
+        'ff' => ['Fulfulde', 'ltr'],
+        'ln' => ['Lingála', 'ltr'],
     ];
 
-    private const RTL = ['ar', 'fa', 'ur', 'ps', 'ug', 'he', 'sd'];
+    private const RTL = ['ar', 'fa', 'ur', 'ps', 'ug', 'he', 'sd', 'nqo'];
 
     /** الاسم الأصلي للعرض (احتياط: رمز اللغة بحروف كبيرة). */
     public static function native(string $code): string

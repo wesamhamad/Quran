@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Models\Ayah;
 use App\Models\Reciter;
 use App\Models\Surah;
+use App\Support\Riwayat;
 use App\Support\TranslationLanguages;
 use Inertia\Inertia;
 use Inertia\Response;
@@ -21,6 +22,7 @@ class HomeController extends Controller
             ],
             'reciters' => Reciter::orderBy('id')->get(['id', 'name']),
             'translationLangs' => TranslationLanguages::available(),
+            'riwayat' => Riwayat::available(),
         ]);
     }
 }

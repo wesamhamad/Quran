@@ -15,7 +15,7 @@ createInertiaApp({
             case name === 'Welcome':
                 return null;
             // صفحات المصحف العامة — بدون قالب لوحة التحكم
-            case ['Home', 'Index', 'Search', 'Mushaf', 'Khatmah'].includes(name):
+            case ['Home', 'Index', 'Search', 'Mushaf', 'Khatmah', 'Sources'].includes(name):
                 return null;
             case name.startsWith('auth/'):
                 return AuthLayout;

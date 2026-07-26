@@ -11,6 +11,9 @@ class VerseController extends Controller
     /** slug تفسير «غريب القرآن» — يُعرض كقسم «معاني الكلمات» مستقلّ لا ضمن دورة التفاسير. */
     private const GHARIB_SLUG = 'ar-gharib-seraj';
 
+    /** slug «أسباب النزول» — يُعرض كقسم مستقلّ لا ضمن دورة التفاسير. */
+    private const ASBAB_SLUG = 'ar-asbab-nuzul';
+
     public function show(string $key): JsonResponse
     {
         $ayah = Ayah::with([
@@ -19,9 +22,11 @@ class VerseController extends Controller
             'translations:id,ayah_id,name,language,text',
         ])->where('verse_key', $key)->firstOrFail();
 
-        // فصل «غريب القرآن» (معاني الكلمات) عن بقية التفاسير الكاملة
-        [$gharib, $tafsirs] = $ayah->tafsirTexts->partition(
-            fn ($t) => $t->tafsir->slug === self::GHARIB_SLUG
+        // فصل «غريب القرآن» و«أسباب النزول» عن بقية التفاسير الكاملة
+        $gharib = $ayah->tafsirTexts->firstWhere(fn ($t) => $t->tafsir->slug === self::GHARIB_SLUG);
+        $asbab = $ayah->tafsirTexts->firstWhere(fn ($t) => $t->tafsir->slug === self::ASBAB_SLUG);
+        $tafsirs = $ayah->tafsirTexts->reject(
+            fn ($t) => in_array($t->tafsir->slug, [self::GHARIB_SLUG, self::ASBAB_SLUG], true)
         );
 
         return response()->json([
@@ -35,10 +40,15 @@ class VerseController extends Controller
                 'id'   => $ayah->surah->id,
                 'name' => $ayah->surah->name_arabic,
             ],
-            'word_meanings' => $gharib->map(fn ($t) => [
-                'name' => $t->tafsir->name,
-                'text' => $t->text,
-            ])->first(),
+            'asbab' => $asbab ? [
+                'name' => $asbab->tafsir->name,
+                'author' => $asbab->tafsir->author_name,
+                'text' => $asbab->text,
+            ] : null,
+            'word_meanings' => $gharib ? [
+                'name' => $gharib->tafsir->name,
+                'text' => $gharib->text,
+            ] : null,
             'tafsirs' => $tafsirs->map(fn ($t) => [
                 'name' => $t->tafsir->name,
                 'text' => $t->text,
