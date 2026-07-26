@@ -1,5 +1,6 @@
 <?php
 
+use App\Http\Controllers\GateController;
 use App\Http\Controllers\HomeController;
 use App\Http\Controllers\KhatmahController;
 use App\Http\Controllers\MushafController;
@@ -7,6 +8,10 @@ use App\Http\Controllers\SearchController;
 use App\Http\Controllers\SurahIndexController;
 use App\Http\Controllers\VerseController;
 use Illuminate\Support\Facades\Route;
+
+// بوابة كلمة المرور المشتركة (خارج نطاق الحماية)
+Route::get('/gate', [GateController::class, 'show'])->name('gate.show');
+Route::post('/gate', [GateController::class, 'verify'])->name('gate.verify');
 
 Route::get('/', [HomeController::class, 'index'])->name('home');
 
