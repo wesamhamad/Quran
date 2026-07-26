@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { Head, Link, router } from '@inertiajs/vue3';
-import { computed, onMounted, onUnmounted, ref, watch } from 'vue';
+import { computed, nextTick, onMounted, onUnmounted, ref, watch } from 'vue';
 import AppNav from '@/components/AppNav.vue';
 import Icon from '@/components/Icon.vue';
 import type { ReviewPlan } from '@/lib/reviewSchedule';
@@ -73,6 +73,9 @@ const props = defineProps<{
     audio: AudioT[];
     translationLangs: LangT[];
     riwayat: RiwT[];
+    // آيات هذه الصفحة التي تحمل سبب نزول / متشابهات (بترتيب القراءة)
+    asbabKeys: string[];
+    similarKeys: string[];
 }>();
 
 const pageFont = `p${props.page}`;
@@ -1039,6 +1042,35 @@ const showVerseTajweed = ref(false); // تلوين تجويد الآية داخ�
 const showSimilar = ref(true); // «آيات متشابهة» مفتوح افتراضياً
 const showAsbab = ref(true); // «أسباب النزول» مفتوح افتراضياً
 
+// روابط سريعة (أعلى الشاشة): تفتح القسم للآية المحددة إن كانت تحمله،
+// وإلا لأول آية في الصفحة تحمله، ثم تُبرزه بوميض.
+async function jumpToSection(which: 'asbab' | 'similar') {
+    const list = which === 'asbab' ? props.asbabKeys : props.similarKeys;
+    if (!list.length) return;
+
+    const target =
+        selectedVerse.value && list.includes(selectedVerse.value)
+            ? selectedVerse.value
+            : list[0];
+
+    if (!drawerOpen.value || selectedVerse.value !== target) {
+        await openVerse(target);
+    }
+
+    if (which === 'asbab') showAsbab.value = true;
+    else showSimilar.value = true;
+    await nextTick();
+
+    const el = document.querySelector(`.drawer .${which}`);
+    if (el) {
+        el.scrollIntoView({ behavior: 'smooth', block: 'start' });
+        el.classList.remove('flash');
+        // إعادة تشغيل وميض تنبيهي بسيط ليلحظه المستخدم
+        void (el as HTMLElement).offsetWidth;
+        el.classList.add('flash');
+    }
+}
+
 async function openVerse(key: string) {
     selectedVerse.value = key;
     drawerOpen.value = true;
@@ -1548,6 +1580,31 @@ onUnmounted(() => {
                 <Icon name="sparkles" :size="18" />
                 <span class="tb-label">التجويد</span>
                 <Icon v-if="tajweedMode" name="check" :size="14" />
+            </button>
+
+            <!-- روابط سريعة: تظهر إذا كانت هذه الصفحة تحوي آيات بسبب نزول/متشابهات -->
+            <button
+                v-if="asbabKeys.length"
+                class="tb-btn jump-btn"
+                @click="jumpToSection('asbab')"
+                aria-label="سبب النزول"
+            >
+                <Icon name="book" :size="18" />
+                <span class="tb-label">سبب النزول</span>
+            </button>
+            <button
+                v-if="similarKeys.length"
+                class="tb-btn jump-btn"
+                @click="jumpToSection('similar')"
+                aria-label="متشابهات"
+            >
+                <Icon name="repeat" :size="18" />
+                <span class="tb-label"
+                    >متشابهات
+                    <span class="jump-count">{{
+                        similarKeys.length
+                    }}</span></span
+                >
             </button>
 
             <span v-if="isRiwayah" class="riw-badge">
@@ -2724,6 +2781,47 @@ onUnmounted(() => {
 }
 .teacher-btn.on {
     box-shadow: 0 0 0 2px var(--brand-200);
+}
+/* روابط سريعة سياقية (سبب النزول / متشابهات) — مميّزة لتلفت انتباه المستخدم */
+.jump-btn {
+    background: var(--brand-soft);
+    color: var(--brand);
+    border-color: var(--brand-200);
+}
+.jump-btn:hover {
+    color: var(--brand);
+    background: color-mix(in srgb, var(--brand) 16%, var(--surface));
+    border-color: var(--brand-200);
+}
+.jump-count {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-width: 1.15rem;
+    height: 1.15rem;
+    padding: 0 0.28rem;
+    margin-inline-start: 0.3rem;
+    font-size: 0.7rem;
+    font-weight: 700;
+    line-height: 1;
+    color: #fff;
+    background: var(--brand);
+    border-radius: 999px;
+}
+/* وميض تنبيهي عند القفز إلى القسم داخل اللوحة */
+.drawer .flash {
+    animation: sectionFlash 1.1s ease;
+}
+@keyframes sectionFlash {
+    0% {
+        box-shadow: 0 0 0 0 var(--brand-soft);
+    }
+    30% {
+        box-shadow: 0 0 0 4px var(--brand-soft);
+    }
+    100% {
+        box-shadow: 0 0 0 0 transparent;
+    }
 }
 .memo-hint {
     display: flex;

@@ -256,6 +256,16 @@ const resumeLabel = computed(() =>
             </article>
             <article>
                 <div class="ico">
+                    <Icon name="calendar" :size="23" :stroke="1.8" />
+                </div>
+                <h3>أسباب النزول</h3>
+                <p>
+                    سبب نزول الآية عند وجوده — من كتاب «صحيح أسباب النزول»
+                    للدكتور إبراهيم العلي، منتقاةً بمعيارٍ حديثيٍّ صحيح.
+                </p>
+            </article>
+            <article>
+                <div class="ico">
                     <Icon name="layers" :size="23" :stroke="1.8" />
                 </div>
                 <h3>تعدد الروايات</h3>

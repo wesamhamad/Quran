@@ -4,9 +4,12 @@ namespace App\Http\Controllers;
 
 use App\Models\AudioFile;
 use App\Models\Ayah;
+use App\Models\AyahSimilarity;
 use App\Models\Reciter;
 use App\Models\RiwayahAyah;
 use App\Models\Surah;
+use App\Models\Tafsir;
+use App\Models\TafsirText;
 use App\Models\Word;
 use App\Support\Riwayat;
 use App\Support\TranslationLanguages;
@@ -235,11 +238,31 @@ class MushafController extends Controller
                 ->values();
         }
 
+        // آيات هذه الصفحة التي لها سبب نزول / متشابهات لفظية — لإظهار روابط سريعة أعلى الصفحة
+        $idToKey = $words->pluck('verse_key', 'ayah_id');
+
+        $asbabTafsirId = Tafsir::where('slug', 'ar-asbab-nuzul')->value('id');
+        $asbabIds = $asbabTafsirId
+            ? TafsirText::where('tafsir_id', $asbabTafsirId)->whereIn('ayah_id', $ayahIds)->pluck('ayah_id')->flip()
+            : collect();
+
+        $similarIds = AyahSimilarity::where(fn ($q) => $q
+            ->whereIn('ayah_id', $ayahIds)->orWhereIn('similar_ayah_id', $ayahIds))
+            ->get(['ayah_id', 'similar_ayah_id'])
+            ->flatMap(fn ($r) => [$r->ayah_id, $r->similar_ayah_id])
+            ->intersect($ayahIds)->flip();
+
+        // بترتيب القراءة (أول آية في الصفحة تحمل البيانات تأتي أولاً)
+        $asbabKeys = $ayahIds->filter(fn ($id) => $asbabIds->has($id))->map(fn ($id) => $idToKey[$id])->values();
+        $similarKeys = $ayahIds->filter(fn ($id) => $similarIds->has($id))->map(fn ($id) => $idToKey[$id])->values();
+
         return Inertia::render('Mushaf', [
             'reciter' => $reciter?->name,
             'reciters' => $reciters,
             'reciterId' => $reciter?->id,
             'audio' => $audio,
+            'asbabKeys' => $asbabKeys,
+            'similarKeys' => $similarKeys,
             'translationLangs' => TranslationLanguages::available(),
             'riwayat' => Riwayat::available(),
             'page' => $page,
