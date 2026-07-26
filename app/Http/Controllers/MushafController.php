@@ -7,15 +7,13 @@ use App\Models\Ayah;
 use App\Models\Reciter;
 use App\Models\Surah;
 use App\Models\Word;
+use App\Support\TranslationLanguages;
 use Illuminate\Http\JsonResponse;
 use Inertia\Inertia;
 use Inertia\Response;
 
 class MushafController extends Controller
 {
-    /** اللغات المتاحة للترجمة (مطابقة لعمود language في جدول الترجمات). */
-    private const TRANSLATION_LANGS = ['english', 'french'];
-
     /**
      * ترجمات آيات الصفحة بترتيب القراءة (JSON للوحة الجانبية على اليمين).
      */
@@ -23,10 +21,11 @@ class MushafController extends Controller
     {
         $page = max(1, min(604, $page));
 
-        $lang = (string) request('lang', 'english');
-        if (! in_array($lang, self::TRANSLATION_LANGS, true)) {
-            $lang = 'english';
-        }
+        // التحقق من اللغة مقابل اللغات المتوفّرة فعلياً في القاعدة
+        $available = collect(TranslationLanguages::available());
+        $lang = (string) request('lang', 'en');
+        $meta = $available->firstWhere('code', $lang) ?? $available->first();
+        $lang = $meta['code'] ?? $lang;
 
         // معرّفات الآيات في الصفحة بترتيب القراءة (نفس ترتيب صفحة المصحف)
         $ayahIds = Word::where('page_number', $page)
@@ -49,17 +48,65 @@ class MushafController extends Controller
             }
 
             return [
-                'verse_key'       => $a->verse_key,
+                'verse_key' => $a->verse_key,
                 'number_in_surah' => $a->number_in_surah,
-                'surah_name'      => $a->surah->name_arabic,
-                'surah_en'        => $a->surah->name_simple,
-                'text'            => $a->translations->first()?->text ?? '',
+                'surah_name' => $a->surah->name_arabic,
+                'surah_en' => $a->surah->name_simple,
+                'text' => $a->translations->first()?->text ?? '',
             ];
         })->filter()->values();
 
         return response()->json([
-            'page'   => $page,
-            'lang'   => $lang,
+            'page' => $page,
+            'lang' => $lang,
+            'name' => $meta['name'] ?? '',
+            'dir' => $meta['dir'] ?? 'ltr',
+            'verses' => $verses,
+        ]);
+    }
+
+    /**
+     * آيات الصفحة بالنص المُعلَّم بالتجويد (JSON) لوضع «القراءة بالتجويد».
+     */
+    public function tajweed(int $page): JsonResponse
+    {
+        $page = max(1, min(604, $page));
+
+        // معرّفات الآيات في الصفحة بترتيب القراءة
+        $ayahIds = Word::where('page_number', $page)
+            ->orderBy('line_number')
+            ->orderBy('ayah_id')
+            ->orderBy('position')
+            ->pluck('ayah_id')
+            ->unique()
+            ->values();
+
+        $ayahs = Ayah::with(['surah:id,name_arabic,name_uthmani,bismillah_pre'])
+            ->whereIn('id', $ayahIds)
+            ->get(['id', 'surah_id', 'number_in_surah', 'verse_key', 'text_tajweed'])
+            ->keyBy('id');
+
+        $verses = $ayahIds->map(function ($id) use ($ayahs) {
+            $a = $ayahs->get($id);
+            if (! $a) {
+                return null;
+            }
+            $firstInSurah = $a->number_in_surah == 1;
+
+            return [
+                'verse_key' => $a->verse_key,
+                'number_in_surah' => $a->number_in_surah,
+                'html' => $a->text_tajweed ?? '',
+                'first_in_surah' => $firstInSurah,
+                'surah_name' => $firstInSurah
+                    ? ($a->surah->name_uthmani ?: ('سورة '.$a->surah->name_arabic))
+                    : null,
+                'bismillah_pre' => $firstInSurah ? (bool) $a->surah->bismillah_pre : false,
+            ];
+        })->filter()->values();
+
+        return response()->json([
+            'page' => $page,
             'verses' => $verses,
         ]);
     }
@@ -93,9 +140,9 @@ class MushafController extends Controller
                 $startSurah = null;
                 if ($starter && ($s = $surahs->get($starter->surah_id))) {
                     $startSurah = [
-                        'id'            => $s->id,
-                        'name_arabic'   => $s->name_arabic,
-                        'name_uthmani'  => $s->name_uthmani ?: ('سورة '.$s->name_arabic),
+                        'id' => $s->id,
+                        'name_arabic' => $s->name_arabic,
+                        'name_uthmani' => $s->name_uthmani ?: ('سورة '.$s->name_arabic),
                         'bismillah_pre' => (bool) $s->bismillah_pre,
                     ];
                 }
@@ -103,11 +150,11 @@ class MushafController extends Controller
                 return [
                     'line_number' => (int) $lineNo,
                     'start_surah' => $startSurah,
-                    'words'       => $lineWords->map(fn ($w) => [
-                        'code'      => $w->code_v2,
-                        'type'      => $w->char_type,        // word | end
+                    'words' => $lineWords->map(fn ($w) => [
+                        'code' => $w->code_v2,
+                        'type' => $w->char_type,        // word | end
                         'verse_key' => $w->verse_key,
-                        'pos'       => (int) $w->position,   // موضع الكلمة للتظليل بالتوقيت
+                        'pos' => (int) $w->position,   // موضع الكلمة للتظليل بالتوقيت
                     ])->values(),
                 ];
             })
@@ -139,26 +186,27 @@ class MushafController extends Controller
                 ->filter(fn ($k) => isset($rows[$k]))
                 ->map(fn ($k) => [
                     'verse_key' => $k,
-                    'url'       => $rows[$k]->url,
-                    'segments'  => $rows[$k]->segments, // [[i, wordNo, startMs, endMs], ...] أو null
+                    'url' => $rows[$k]->url,
+                    'segments' => $rows[$k]->segments, // [[i, wordNo, startMs, endMs], ...] أو null
                 ])
                 ->values();
         }
 
         return Inertia::render('Mushaf', [
-            'reciter'   => $reciter?->name,
-            'reciters'  => $reciters,
+            'reciter' => $reciter?->name,
+            'reciters' => $reciters,
             'reciterId' => $reciter?->id,
-            'audio'     => $audio,
-            'page'    => $page,
-            'prev'    => $page > 1 ? $page - 1 : null,
-            'next'    => $page < 604 ? $page + 1 : null,
-            'juz'     => $first->juz_number ?? null,
-            'surahs'  => $words->pluck('surah_id')->unique()->map(fn ($id) => [
-                'id'          => $id,
+            'audio' => $audio,
+            'translationLangs' => TranslationLanguages::available(),
+            'page' => $page,
+            'prev' => $page > 1 ? $page - 1 : null,
+            'next' => $page < 604 ? $page + 1 : null,
+            'juz' => $first->juz_number ?? null,
+            'surahs' => $words->pluck('surah_id')->unique()->map(fn ($id) => [
+                'id' => $id,
                 'name_arabic' => $surahs->get($id)?->name_arabic,
             ])->values(),
-            'lines'   => $lines,
+            'lines' => $lines,
         ]);
     }
 }

@@ -26,6 +26,11 @@ Route::get('/api/mushaf/{page}/translations', [MushafController::class, 'transla
     ->where('page', '[0-9]+')
     ->name('mushaf.translations');
 
+// آيات الصفحة بالنص المُعلَّم بالتجويد (JSON) لوضع «القراءة بالتجويد»
+Route::get('/api/mushaf/{page}/tajweed', [MushafController::class, 'tajweed'])
+    ->where('page', '[0-9]+')
+    ->name('mushaf.tajweed');
+
 // البحث في النص العثماني
 Route::get('/search', [SearchController::class, 'index'])->name('search');
 
