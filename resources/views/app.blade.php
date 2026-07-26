@@ -42,14 +42,14 @@
         <meta property="og:locale" content="ar_SA">
         <meta property="og:title" content="القرآن الكريم — جامعة القصيم">
         <meta property="og:description" content="القرآن الكريم بالرسم العثماني (مصحف المدينة) مع التلاوة الصوتية، التفاسير والترجمة، البحث، ووضع الحفظ —  جامعة القصيم.">
-        <meta property="og:image" content="{{ url('/og-image.png').'?v=3' }}">
+        <meta property="og:image" content="{{ url('/og-image.png').'?v=4' }}">
         <meta property="og:image:width" content="1200">
         <meta property="og:image:height" content="630">
         <meta property="og:url" content="{{ url()->current() }}">
         <meta name="twitter:card" content="summary_large_image">
         <meta name="twitter:title" content="القرآن الكريم — جامعة القصيم">
         <meta name="twitter:description" content="القرآن الكريم بالرسم العثماني مع التلاوة والتفسير والبحث — جامعة القصيم.">
-        <meta name="twitter:image" content="{{ url('/og-image.png').'?v=3' }}">
+        <meta name="twitter:image" content="{{ url('/og-image.png').'?v=4' }}">
 
         @fonts
 
