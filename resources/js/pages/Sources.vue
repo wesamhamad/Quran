@@ -78,6 +78,17 @@ const sources = [
             },
         ],
     },
+    {
+        icon: 'book',
+        name: 'أسباب النزول الصحيحة',
+        desc: 'أسباب النزول المُصفّاة على الصحّة الحديثية — من كتاب «صحيح أسباب النزول، دراسة حديثية» للدكتور إبراهيم محمد العلي.',
+        links: [
+            {
+                label: 'asbab-al-nuzul-dataset',
+                url: 'https://github.com/mostafaahmed97/asbab-al-nuzul-dataset',
+            },
+        ],
+    },
 ];
 </script>
 

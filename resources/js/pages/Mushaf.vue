@@ -1025,6 +1025,7 @@ interface VerseData {
     text_uthmani: string;
     text_tajweed: string | null;
     surah: { id: number; name: string };
+    asbab: { name: string; author: string; text: string } | null;
     word_meanings: { name: string; text: string } | null;
     tafsirs: { name: string; text: string }[];
     translations: { name: string; language: string; text: string }[];
@@ -1036,6 +1037,7 @@ const showTranslation = ref(false);
 const showMeanings = ref(true); // «معاني الكلمات» مفتوح افتراضياً
 const showVerseTajweed = ref(false); // تلوين تجويد الآية داخل اللوحة
 const showSimilar = ref(true); // «آيات متشابهة» مفتوح افتراضياً
+const showAsbab = ref(true); // «أسباب النزول» مفتوح افتراضياً
 
 async function openVerse(key: string) {
     selectedVerse.value = key;
@@ -2444,6 +2446,36 @@ onUnmounted(() => {
                         </div>
                     </div>
 
+                    <!-- أسباب النزول (صحيحة، موثّقة حديثياً) -->
+                    <section v-if="verseData.asbab" class="asbab">
+                        <button
+                            class="section-toggle"
+                            @click="showAsbab = !showAsbab"
+                        >
+                            <span
+                                ><Icon name="book" :size="15" /> سبب
+                                النزول</span
+                            >
+                            <span class="chev"
+                                ><Icon
+                                    :name="
+                                        showAsbab
+                                            ? 'chevron-down'
+                                            : 'chevron-left'
+                                    "
+                                    :size="16"
+                            /></span>
+                        </button>
+                        <div
+                            v-show="showAsbab"
+                            class="asbab-body"
+                            v-html="verseData.asbab.text"
+                        ></div>
+                        <em v-show="showAsbab" class="src"
+                            >— {{ verseData.asbab.author }}</em
+                        >
+                    </section>
+
                     <!-- المتشابهات اللفظية — للحفظ ونمط المعلّم -->
                     <section
                         v-if="verseData.similar && verseData.similar.length"
@@ -3337,6 +3369,37 @@ onUnmounted(() => {
     margin-top: 0;
     border-color: color-mix(in srgb, var(--brand) 45%, var(--border));
     background: color-mix(in srgb, var(--brand) 8%, var(--surface-2));
+}
+/* أسباب النزول — لون كهرماني مميّز عن بقية الأقسام */
+.asbab {
+    margin-top: 1.1rem;
+}
+.asbab .section-toggle {
+    margin-top: 0;
+    border-color: color-mix(in srgb, #b8860b 45%, var(--border));
+    background: color-mix(in srgb, #b8860b 8%, var(--surface-2));
+}
+.asbab .section-toggle .chev,
+.asbab .section-toggle :deep(svg:first-child) {
+    color: #b8860b;
+}
+.asbab-body {
+    line-height: 2.05;
+    font-size: 1.02rem;
+    color: var(--text);
+    padding: 0.9rem 1.05rem;
+    margin-top: 0.4rem;
+    border-radius: 12px;
+    border: 1px solid color-mix(in srgb, #b8860b 30%, var(--border));
+    border-inline-start: 3px solid #b8860b;
+    background: color-mix(in srgb, #b8860b 6%, var(--surface));
+}
+.asbab .src {
+    display: block;
+    font-style: normal;
+    font-size: 0.72rem;
+    color: var(--text-muted);
+    margin: 0.35rem 0.2rem 0;
 }
 .meanings-body {
     line-height: 2;
