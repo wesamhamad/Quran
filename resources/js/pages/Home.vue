@@ -81,7 +81,7 @@ const resumeLabel = computed(() =>
 </script>
 
 <template>
-    <Head title="المصحف الإلكتروني" />
+    <Head title="القرآن الكريم" />
     <div class="home" dir="rtl">
         <AppNav />
 
@@ -92,9 +92,9 @@ const resumeLabel = computed(() =>
                 class="logo-lg"
             />
             <span class="eyebrow">جامعة القصيم</span>
-            <h1>المصحف الإلكتروني</h1>
+            <h1>القرآن الكريم</h1>
             <p class="sub">
-                القرآن الكريم بالرسم العثماني — مصحف المدينة النبوية
+                بالرسم العثماني — مصحف المدينة النبوية · جامعة القصيم
             </p>
 
             <!-- اختيار ما قبل القراءة: الرواية + القارئ + لغة الترجمة -->

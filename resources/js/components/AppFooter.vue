@@ -16,7 +16,7 @@ const year = new Date().getFullYear();
                     class="af-logo"
                 />
                 <div class="af-brand-text">
-                    <strong>المصحف الإلكتروني</strong>
+                    <strong>القرآن الكريم</strong>
                     <span
                         >عمادة التعلم الإلكتروني وتقنية المعلومات · جامعة
                         القصيم</span

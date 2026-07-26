@@ -16,7 +16,7 @@ function toggleTheme() {
         <Link href="/" class="brand">
             <img src="/storage/Images/logo/qu-logo-v4.webp" alt="جامعة القصيم" class="logo" />
             <span class="brand-text">
-                <strong>المصحف الإلكتروني</strong>
+                <strong>القرآن الكريم</strong>
                 <small>جامعة القصيم</small>
             </span>
         </Link>

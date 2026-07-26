@@ -20,7 +20,7 @@ function submit() {
         <div class="card">
             <div class="mark" aria-hidden="true">﷽</div>
 
-            <h1 class="title">المصحف الإلكتروني</h1>
+            <h1 class="title">القرآن الكريم</h1>
             <p class="sub">هذه المنصّة محميّة — أدخل كلمة المرور للمتابعة</p>
 
             <form class="form" @submit.prevent="submit">

@@ -9,7 +9,7 @@ import { initializeFlashToast } from '@/lib/flashToast';
 const appName = 'جامعة القصيم | Qassim University';
 
 createInertiaApp({
-    title: (title) => (title ? `${title} | ${appName}` : `المصحف الإلكتروني | ${appName}`),
+    title: (title) => (title ? `${title} | ${appName}` : `القرآن الكريم | ${appName}`),
     layout: (name) => {
         switch (true) {
             case name === 'Welcome':

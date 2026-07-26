@@ -93,7 +93,7 @@ const sources = [
 </script>
 
 <template>
-    <Head title="المصادر والإسناد — المصحف الإلكتروني" />
+    <Head title="المصادر والإسناد — القرآن الكريم" />
     <div class="sources" dir="rtl">
         <AppNav active="sources" />
 
@@ -101,7 +101,7 @@ const sources = [
             <span class="eyebrow"><Icon name="book" :size="16" /> الإسناد والموثوقية</span>
             <h1>المصادر والإسناد</h1>
             <p class="sub">
-                يحرص المصحف الإلكتروني على إسناد كلّ محتواه إلى مصادره الرسمية
+                نحرص على إسناد كلّ محتوى في المنصّة إلى مصادره الرسمية
                 الموثوقة. فيما يلي مراجع كل مكوّن من مكوّنات التطبيق.
             </p>
         </header>

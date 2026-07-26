@@ -1259,7 +1259,7 @@ async function shareAyahImage() {
 
     ctx.fillStyle = '#25935f';
     ctx.font = '600 30px "Segoe UI", Tahoma, sans-serif';
-    ctx.fillText('المصحف الإلكتروني · جامعة القصيم', W / 2, H - m - 52);
+    ctx.fillText('القرآن الكريم · جامعة القصيم', W / 2, H - m - 52);
 
     await exportCanvas(
         c,
@@ -1411,7 +1411,7 @@ async function shareTafsirImage() {
         ctx.textAlign = 'center';
         ctx.fillStyle = '#25935f';
         ctx.font = '600 28px "Segoe UI", Tahoma, sans-serif';
-        ctx.fillText('المصحف الإلكتروني · جامعة القصيم', W / 2, H - m - 40);
+        ctx.fillText('القرآن الكريم · جامعة القصيم', W / 2, H - m - 40);
 
         const blob = await canvasToBlob(c);
         if (!blob) return null;
