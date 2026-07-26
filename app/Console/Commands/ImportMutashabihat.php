@@ -131,14 +131,20 @@ class ImportMutashabihat extends Command
         return $data;
     }
 
-    /** يحوّل قيمة ayah (رقم أو مصفوفة) إلى قائمة أعداد صحيحة مرتّبة. */
+    /**
+     * يحوّل قيمة ayah (رقم أو مصفوفة) إلى قائمة معرّفات ayahs.id.
+     *
+     * ملاحظة مهمّة: أرقام المصدر صفريّة الأساس (0..6235؛ الآية 0 = 1:1)، بينما
+     * ayahs.id تبدأ من 1، لذا نضيف 1 لكل رقم. (تحقّق: متوسط تطابق الكلمات
+     * يقفز من ~0.10 إلى ~0.49 عند تطبيق هذا الإزاحة.)
+     */
     private function ayahList(mixed $value): array
     {
         if (is_array($value) && isset($value['ayah'])) {
             $value = $value['ayah']; // حالة src ككائن {ayah: ...}
         }
         $list = array_values(array_filter(
-            array_map(fn ($n) => (int) $n, (array) $value),
+            array_map(fn ($n) => (int) $n + 1, (array) $value),
             fn ($n) => $n >= 1 && $n <= 6236
         ));
 
